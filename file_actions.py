@@ -7,13 +7,13 @@ import datetime
 
 
 def read_and_normalize(file_path) -> pandas.DataFrame:
-    headers_list = pandas.read_excel(file_path, nrows=0).columns.tolist()
+    file = pandas.read_excel(file_path)
+    headers_list = file.columns.tolist()
     found_headers_to_check = ['latitude', 'longitude', 'scid', 'node_type', 'ppl company_tag', 'pole_owner',
                               'verizon pennsylvania inc._tag', 'pole_tag', 'unknown_tag', 'make_ready_notes', 'address',
                               'commonwealth telephone co.  dba frontier comm._tag', 'county']
     found_headers = [header for header in found_headers_to_check if header in headers_list]
-    # noinspection PyTypeChecker
-    file = pandas.read_excel(file_path, usecols=found_headers)
+    file = file[found_headers]
 
     replacements = {
         'PPL Company': 'PPL',
@@ -124,12 +124,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
         except ValueError:
             raise ValueError
 
-    def get_street_name(index: int) -> str:
-        address = file.loc[index, 'address']
-        address = address.split(', ')
-        address = address[0]
-        address = address.split(' ', maxsplit=1)
-        return address[1]
+    def get_street_name(address: str) -> str:
+        return address.split(', ')[0].split(' ', maxsplit=1)[1]
 
     try:
         # Refactor file for only the relevant information
@@ -254,8 +250,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                     continue
                 if not any(re.search(act, line, re.IGNORECASE) for act in action_check):
                     continue
-                for clean in [':', ';', "'", '"', '.']:
-                    line = line.replace(clean, "")
+                punctuation_marks = r'[:"\'.;]'
+                line = re.sub(punctuation_marks, '', line)
                 iterable_line = line.split(' ')
                 for i, word in enumerate(iterable_line):
                     if word == 'at':
@@ -319,7 +315,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                     'Pole Ref #': file.loc[x, 'SCID'],
                     'Telco Pole #': file.loc[x, 'verizon pennsylvania inc._tag'],
                     'ELCO Pole #': file.loc[x, 'Tag'],
-                    'Street Name': get_street_name(x),
+                    'Street Name': get_street_name(file.loc[x, 'address']),
                     'Latitude': file.loc[x, 'Latitude'],
                     'Longitude': file.loc[x, 'Longitude']
                 }
@@ -383,17 +379,15 @@ def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
 
     for group in groups:
         for pole in groups[group]:
-            reader = pypdf.PdfReader('pdf/template.pdf')
-            writer = pypdf.PdfWriter()
-            writer.clone_reader_document_root(reader)
-            writer.update_page_form_field_values(writer.pages[0], {'Date': date})
-            # Pole data stuff
-            os.makedirs(f"{path}/{name}/{group}", exist_ok=True)
-            writer.update_page_form_field_values(writer.pages[0], groups[group])
-            with open(f"{path}/{name}/{group}/{groups[group][pole]}-frontier_form.pdf", "wb") as output_file:
-                writer.write(output_file)
-
-            reader.close()
-            writer.close()
+            output_path = f"{path}/{name}/{group}/{groups[group][pole]}-frontier_form.pdf"
+            with pypdf.PdfReader('pdf/template.pdf') as reader:
+                writer = pypdf.PdfWriter()
+                writer.clone_reader_document_root(reader)
+                writer.update_page_form_field_values(writer.pages[0], {'Date': date})
+                # Pole data stuff
+                os.makedirs(f"{path}/{name}/{group}", exist_ok=True)
+                writer.update_page_form_field_values(writer.pages[0], groups[group])
+                with open(output_path, "wb") as output_file:
+                    writer.write(output_file)
 
     return True
