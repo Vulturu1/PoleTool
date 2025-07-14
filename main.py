@@ -5,8 +5,6 @@ from tkinterdnd2 import DND_FILES, TkinterDnD
 import file_actions as fa
 
 
-# --- Classes ---
-
 class DraggableLabel(customtkinter.CTkLabel):
     """
     A custom label that can act as a drop target for files.

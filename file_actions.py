@@ -336,7 +336,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             f.write(str(e))
         return False
 
-# file: pandas.DataFrame, path, name
+
 def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
 
     def gen_table_data(parent_file: pandas.DataFrame, limit: int, start: int = 0) -> dict:
@@ -369,11 +369,7 @@ def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
 
     file = file.loc[file['Owner'] == 'Frontier', ['Latitude', 'Longitude', 'SCID', 'Owner', 'Tag', 'Make Ready Notes', 'address', 'county', 'commonwealth telephone co.  dba frontier comm._tag']]
     file.reset_index(drop=True, inplace=True)
-    reader = pypdf.PdfReader('pdf/template.pdf')
-    writer = pypdf.PdfWriter()
-    writer.clone_reader_document_root(reader)
     date = datetime.datetime.now().strftime("%m/%d/%Y")
-    writer.update_page_form_field_values(writer.pages[0], {'Date': date})
     poles_count = len(file['SCID'].tolist())
 
     # Create file structure and variable groups
@@ -387,10 +383,17 @@ def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
 
     for group in groups:
         for pole in groups[group]:
+            reader = pypdf.PdfReader('pdf/template.pdf')
+            writer = pypdf.PdfWriter()
+            writer.clone_reader_document_root(reader)
+            writer.update_page_form_field_values(writer.pages[0], {'Date': date})
             # Pole data stuff
             os.makedirs(f"{path}/{name}/{group}", exist_ok=True)
             writer.update_page_form_field_values(writer.pages[0], groups[group])
             with open(f"{path}/{name}/{group}/{groups[group][pole]}-frontier_form.pdf", "wb") as output_file:
                 writer.write(output_file)
+
+            reader.close()
+            writer.close()
 
     return True
