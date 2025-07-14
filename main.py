@@ -3,6 +3,7 @@ import os
 from tkinter import filedialog
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import file_actions as fa
+import threading
 
 
 class DraggableLabel(customtkinter.CTkLabel):
@@ -206,16 +207,17 @@ class App(TkinterDnD.Tk):
         file = fa.read_and_normalize(self.drop_label.file_path)
 
         file_action_functions = {
-            "Prepare for Vetro": lambda: fa.vetro_export(file, self.output_path, output_filename),
-            "Generate MRN": lambda: fa.generate_mrn(file, self.output_path, output_filename),
-            "Generate Verizon Application": lambda: fa.verizon_app(file, self.output_path, output_filename),
-            "Generate Frontier Applications (Prototype)": lambda: fa.frontier_pdf(file, self.output_path, output_filename),
+            "Prepare for Vetro": lambda: threading.Thread(target=fa.vetro_export, args=[file, self.output_path, output_filename]).start(),
+            "Generate MRN": lambda: threading.Thread(target=fa.generate_mrn, args=[file, self.output_path, output_filename]).start(),
+            "Generate Verizon Application": lambda: threading.Thread(target=fa.verizon_app, args=[file, self.output_path, output_filename]).start(),
+            "Generate Frontier Applications (Prototype)": lambda: threading.Thread(target=fa.frontier_pdf, args=[file, self.output_path, output_filename]).start(),
         }
 
         total_steps = len(selected_actions) if selected_actions else 1
         success = True
         for i, action in enumerate(selected_actions or ["Processing..."]):
             self.status_label.configure(text=f"Status: {action}")
+            self.update_idletasks()  # Force UI update
             if action in file_action_functions:
                 if file_action_functions[action]():
                     success = True
