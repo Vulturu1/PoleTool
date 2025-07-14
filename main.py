@@ -100,7 +100,7 @@ class App(TkinterDnD.Tk):
             "Prepare for Vetro": "Refactors file for seamless Vetro import.",
             "Generate MRN": "Generates a formatted Make Ready Sheet.",
             "Generate Verizon Application": "Outputs a Make Ready Sheet for Verizon owned poles.",
-            "Generate Frontier Applications (In Development)": "Outputs a folder for Frontier owned poles.",
+            "Generate Frontier Applications (Prototype)": "Outputs a folder for Frontier owned poles.",
         }
 
         row_counter = 0
@@ -211,7 +211,7 @@ class App(TkinterDnD.Tk):
             "Prepare for Vetro": lambda: fa.vetro_export(file, self.output_path, output_filename),
             "Generate MRN": lambda: fa.generate_mrn(file, self.output_path, output_filename),
             "Generate Verizon Application": lambda: fa.verizon_app(file, self.output_path, output_filename),
-            "Generate Frontier Applications (In Development)": lambda: fa.frontier_pdf(file, self.output_path, output_filename),
+            "Generate Frontier Applications (Prototype)": lambda: fa.frontier_pdf(file, self.output_path, output_filename),
         }
 
         total_steps = len(selected_actions) if selected_actions else 1

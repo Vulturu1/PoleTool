@@ -104,8 +104,7 @@ def generate_mrn(file: pandas.DataFrame, path, name) -> bool:
             f.write(str(e))
         return False
 
-# FIXME: any poles with a letter following the SCID number are not needed
-# FIXME: they are reference poles
+
 def verizon_app(file: pandas.DataFrame, path, name) -> bool:
 
     def split_and_convert(target: str) -> int:
@@ -340,12 +339,11 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
 # file: pandas.DataFrame, path, name
 def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
 
-    return True  # FIXME: Here to keep this code from running
-
-    def gen_table_data(parent_file: pandas.DataFrame, limit: int) -> dict:
+    def gen_table_data(parent_file: pandas.DataFrame, limit: int, start: int = 0) -> dict:
         all_pole_data = {}
         for i in range(limit):
             # Format address for route num and street name
+            i += start
             address = parent_file.loc[i, 'address']
             address = address.split(', ')
             for part in address:
@@ -359,59 +357,40 @@ def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
             address = address.split(' ', maxsplit=1)
             route, street = address[0], address[1]
             pole_data = {
-                f'Telephone Co Pole Row{i + 1}': parent_file.loc[i, 'commonwealth telephone co.  dba frontier comm._tag'],
-                f'Power Pole Row{i + 1}': 'dk',
-                f'Street  LocationRow{i + 1}': street,  # Two spaces here because Frontier is retarded
-                f'Route NumberRow{i + 1}': route,
-                f'MunicipalityRow{i + 1}': municipality,
-                f'CountyRow{i + 1}': parent_file.loc[i, 'county']
+                f'Telephone Co Pole Row{i + 1 - start}': parent_file.loc[i, 'commonwealth telephone co.  dba frontier comm._tag'],
+                f'Power Pole Row{i + 1 - start}': 'dk',
+                f'Street  LocationRow{i + 1 - start}': street,  # Two spaces here because Frontier is retarded
+                f'Route NumberRow{i + 1 - start}': route,
+                f'MunicipalityRow{i + 1 - start}': municipality,
+                f'CountyRow{i + 1 - start}': parent_file.loc[i, 'county']
             }
             all_pole_data.update(pole_data)
         return all_pole_data
 
     file = file.loc[file['Owner'] == 'Frontier', ['Latitude', 'Longitude', 'SCID', 'Owner', 'Tag', 'Make Ready Notes', 'address', 'county', 'commonwealth telephone co.  dba frontier comm._tag']]
-    poles_count = 0
     file.reset_index(drop=True, inplace=True)
     reader = pypdf.PdfReader('pdf/template.pdf')
     writer = pypdf.PdfWriter()
     writer.clone_reader_document_root(reader)
     date = datetime.datetime.now().strftime("%m/%d/%Y")
     writer.update_page_form_field_values(writer.pages[0], {'Date': date})
-
-    for _ in file['SCID'].tolist():
-        poles_count += 1
+    poles_count = len(file['SCID'].tolist())
 
     # Create file structure and variable groups
-    index = 0
-    count = 1
+    index, count = 0, 1
     groups = {}
-    # FIXME: this code is generating the table everytime for every pole.
-    # FIXME: it should generate the table once with the associated poles.
     while poles_count > 0:
-        for i in range(20):
-            try:
-                groups[f'Group{count}'] = gen_table_data(file)
-                index += 1
-            except IndexError:
-                break
         poles_count -= 20
+        groups[f'Group{count}'] = gen_table_data(file, poles_count + 20 if poles_count < 0 else 20, start=index)
+        index += 20
         count += 1
 
     for group in groups:
         for pole in groups[group]:
             # Pole data stuff
             os.makedirs(f"{path}/{name}/{group}", exist_ok=True)
-            # FIXME: PICK UP THE WORK HERE
-            writer.update_page_form_field_values(writer.pages[0], gen_table_data(file))
-            # FIXME: Index is not working here.
-            with open(f"{path}/{file.loc[i, 'commonwealth telephone co.  dba frontier comm._tag']}-frontier_form.pdf", "wb") as output_file:
+            writer.update_page_form_field_values(writer.pages[0], groups[group])
+            with open(f"{path}/{name}/{group}/{groups[group][pole]}-frontier_form.pdf", "wb") as output_file:
                 writer.write(output_file)
 
     return True
-    # Date
-    # Telephone Co Pole Row @
-    # Power Pole Row@
-    # Street LocationRow@
-    # Route NumberRow@  (This is just the house number)
-    # MunicipalityRow@
-    # CountyRow@
