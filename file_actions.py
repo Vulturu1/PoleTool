@@ -377,12 +377,12 @@ def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
         index += 20
         count += 1
 
+    writer = pypdf.PdfWriter()
     for group in groups:
         with pypdf.PdfReader('pdf/template.pdf') as reader:
             for pole in groups[group]:
                 reader_copy = reader
                 output_path = f"{path}/{name}/{group}/{groups[group][pole]}-frontier_form.pdf"
-                writer = pypdf.PdfWriter()
                 writer.clone_reader_document_root(reader_copy)
                 writer.update_page_form_field_values(writer.pages[0], {'Date': date})
                 # Pole data stuff
