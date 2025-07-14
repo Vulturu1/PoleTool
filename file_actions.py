@@ -106,7 +106,7 @@ def generate_mrn(file: pandas.DataFrame, path, name) -> bool:
 
 # FIXME: any poles with a letter following the SCID number are not needed
 # FIXME: they are reference poles
-def verizon_mrs(file: pandas.DataFrame, path, name) -> bool:
+def verizon_app(file: pandas.DataFrame, path, name) -> bool:
 
     def split_and_convert(target: str) -> int:
         if not target or not isinstance(target, str):
@@ -220,6 +220,8 @@ def verizon_mrs(file: pandas.DataFrame, path, name) -> bool:
 
         # Begin refactoring data
         for x, value in enumerate(mrn_iterable):
+            if not file.loc[x, 'SCID'].isdigit():  # Skip pole if SCID contains a letter because it is a reference pole
+                continue
             if pandas.isna(value) or not isinstance(value, str):  # Check for NaN/float values
                 new_row_data = {
                     'Pole Ref #': file.loc[x, 'SCID'],
@@ -337,6 +339,8 @@ def verizon_mrs(file: pandas.DataFrame, path, name) -> bool:
 
 # file: pandas.DataFrame, path, name
 def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
+
+    return True  # FIXME: Here to keep this code from running
 
     def gen_table_data(parent_file: pandas.DataFrame, limit: int) -> dict:
         all_pole_data = {}

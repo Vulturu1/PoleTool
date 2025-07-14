@@ -3597,6 +3597,202 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.1520.0_x64__qbz5n2kfra8p0\\Lib\\pydoc_data\\topics.py',
    'PYMODULE'),
+  ('pypdf',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\__init__.py',
+   'PYMODULE'),
+  ('pypdf._cmap',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_cmap.py',
+   'PYMODULE'),
+  ('pypdf._codecs',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_codecs\\__init__.py',
+   'PYMODULE'),
+  ('pypdf._codecs._codecs',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_codecs\\_codecs.py',
+   'PYMODULE'),
+  ('pypdf._codecs.adobe_glyphs',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_codecs\\adobe_glyphs.py',
+   'PYMODULE'),
+  ('pypdf._codecs.pdfdoc',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_codecs\\pdfdoc.py',
+   'PYMODULE'),
+  ('pypdf._codecs.std',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_codecs\\std.py',
+   'PYMODULE'),
+  ('pypdf._codecs.symbol',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_codecs\\symbol.py',
+   'PYMODULE'),
+  ('pypdf._codecs.zapfding',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_codecs\\zapfding.py',
+   'PYMODULE'),
+  ('pypdf._crypt_providers',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_crypt_providers\\__init__.py',
+   'PYMODULE'),
+  ('pypdf._crypt_providers._base',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_crypt_providers\\_base.py',
+   'PYMODULE'),
+  ('pypdf._crypt_providers._cryptography',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_crypt_providers\\_cryptography.py',
+   'PYMODULE'),
+  ('pypdf._crypt_providers._fallback',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_crypt_providers\\_fallback.py',
+   'PYMODULE'),
+  ('pypdf._crypt_providers._pycryptodome',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_crypt_providers\\_pycryptodome.py',
+   'PYMODULE'),
+  ('pypdf._doc_common',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_doc_common.py',
+   'PYMODULE'),
+  ('pypdf._encryption',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_encryption.py',
+   'PYMODULE'),
+  ('pypdf._merger',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_merger.py',
+   'PYMODULE'),
+  ('pypdf._page',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_page.py',
+   'PYMODULE'),
+  ('pypdf._page_labels',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_page_labels.py',
+   'PYMODULE'),
+  ('pypdf._protocols',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_protocols.py',
+   'PYMODULE'),
+  ('pypdf._reader',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_reader.py',
+   'PYMODULE'),
+  ('pypdf._text_extraction',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_text_extraction\\__init__.py',
+   'PYMODULE'),
+  ('pypdf._text_extraction._layout_mode',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_text_extraction\\_layout_mode\\__init__.py',
+   'PYMODULE'),
+  ('pypdf._text_extraction._layout_mode._fixed_width_page',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_text_extraction\\_layout_mode\\_fixed_width_page.py',
+   'PYMODULE'),
+  ('pypdf._text_extraction._layout_mode._font',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_text_extraction\\_layout_mode\\_font.py',
+   'PYMODULE'),
+  ('pypdf._text_extraction._layout_mode._font_widths',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_text_extraction\\_layout_mode\\_font_widths.py',
+   'PYMODULE'),
+  ('pypdf._text_extraction._layout_mode._text_state_manager',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_text_extraction\\_layout_mode\\_text_state_manager.py',
+   'PYMODULE'),
+  ('pypdf._text_extraction._layout_mode._text_state_params',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_text_extraction\\_layout_mode\\_text_state_params.py',
+   'PYMODULE'),
+  ('pypdf._utils',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_utils.py',
+   'PYMODULE'),
+  ('pypdf._version',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_version.py',
+   'PYMODULE'),
+  ('pypdf._writer',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_writer.py',
+   'PYMODULE'),
+  ('pypdf._xobj_image_helpers',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_xobj_image_helpers.py',
+   'PYMODULE'),
+  ('pypdf.constants',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\constants.py',
+   'PYMODULE'),
+  ('pypdf.errors',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\errors.py',
+   'PYMODULE'),
+  ('pypdf.filters',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\filters.py',
+   'PYMODULE'),
+  ('pypdf.generic',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\__init__.py',
+   'PYMODULE'),
+  ('pypdf.generic._base',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\_base.py',
+   'PYMODULE'),
+  ('pypdf.generic._data_structures',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\_data_structures.py',
+   'PYMODULE'),
+  ('pypdf.generic._files',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\_files.py',
+   'PYMODULE'),
+  ('pypdf.generic._fit',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\_fit.py',
+   'PYMODULE'),
+  ('pypdf.generic._image_inline',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\_image_inline.py',
+   'PYMODULE'),
+  ('pypdf.generic._outline',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\_outline.py',
+   'PYMODULE'),
+  ('pypdf.generic._rectangle',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\_rectangle.py',
+   'PYMODULE'),
+  ('pypdf.generic._utils',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\_utils.py',
+   'PYMODULE'),
+  ('pypdf.generic._viewerpref',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\generic\\_viewerpref.py',
+   'PYMODULE'),
+  ('pypdf.pagerange',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\pagerange.py',
+   'PYMODULE'),
+  ('pypdf.papersizes',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\papersizes.py',
+   'PYMODULE'),
+  ('pypdf.types',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\types.py',
+   'PYMODULE'),
+  ('pypdf.xmp',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\xmp.py',
+   'PYMODULE'),
   ('pytz',
    'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
    'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pytz\\__init__.py',

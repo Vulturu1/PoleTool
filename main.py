@@ -210,7 +210,7 @@ class App(TkinterDnD.Tk):
         file_action_functions = {
             "Prepare for Vetro": lambda: fa.vetro_export(file, self.output_path, output_filename),
             "Generate MRN": lambda: fa.generate_mrn(file, self.output_path, output_filename),
-            "Generate Verizon Application": lambda: fa.verizon_mrs(file, self.output_path, output_filename),
+            "Generate Verizon Application": lambda: fa.verizon_app(file, self.output_path, output_filename),
             "Generate Frontier Applications (In Development)": lambda: fa.frontier_pdf(file, self.output_path, output_filename),
         }
 
