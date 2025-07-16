@@ -360,7 +360,8 @@ def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
                 f'MunicipalityRow{i + 1 - start}': municipality,
                 f'CountyRow{i + 1 - start}': parent_file.loc[i, 'county']
             }
-            all_pole_data.update(pole_data)
+            pole_identifier = {f'Pole ID {i}': pole_data}
+            all_pole_data.update(pole_identifier)
         return all_pole_data
 
     file = file.loc[file['Owner'] == 'Frontier', ['Latitude', 'Longitude', 'SCID', 'Owner', 'Tag', 'Make Ready Notes', 'address', 'county', 'commonwealth telephone co.  dba frontier comm._tag']]
@@ -377,17 +378,19 @@ def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
         index += 20
         count += 1
 
-    for group in groups:
-        with pypdf.PdfReader('pdf/template.pdf') as reader:
-            for pole in groups[group]:
-                reader_copy = reader
-                output_path = f"{path}/{name}/{group}/{groups[group][pole]}-frontier_form.pdf"
+    with pypdf.PdfReader('pdf/template.pdf') as reader:
+        for group, poleID in groups.items():
+            data_combined = {}
+            for _, pole in poleID.items():
+                data_combined.update(pole)
+            for _, pole in poleID.items():
+                reader_copy = reader  # Creates a copy of PDF to not overwrite the original PDF when new data is added
+                output_path = f"{path}/{name}/{group}/{next(iter(pole.values()))}-frontier_form.pdf"
                 writer = pypdf.PdfWriter()
                 writer.clone_reader_document_root(reader_copy)
                 writer.update_page_form_field_values(writer.pages[0], {'Date': date})
-                # Pole data stuff
                 os.makedirs(f"{path}/{name}/{group}", exist_ok=True)
-                writer.update_page_form_field_values(writer.pages[0], groups[group])
+                writer.update_page_form_field_values(writer.pages[0], data_combined)
                 with open(output_path, "wb") as output_file:
                     writer.write(output_file)
 
