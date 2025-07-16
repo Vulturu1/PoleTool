@@ -369,6 +369,7 @@ imported by:
  &#8226;   <a href="#pandas.core.arrays.period">pandas.core.arrays.period</a>
  &#8226;   <a href="#pandas.core.arrays.sparse.array">pandas.core.arrays.sparse.array</a>
  &#8226;   <a href="#pandas.core.arrays.sparse.scipy_sparse">pandas.core.arrays.sparse.scipy_sparse</a>
+ &#8226;   <a href="#pandas.core.arrays.string_">pandas.core.arrays.string_</a>
  &#8226;   <a href="#pandas.core.arrays.string_arrow">pandas.core.arrays.string_arrow</a>
  &#8226;   <a href="#pandas.core.arrays.timedeltas">pandas.core.arrays.timedeltas</a>
  &#8226;   <a href="#pandas.core.base">pandas.core.base</a>
@@ -12619,6 +12620,7 @@ imported by:
  &#8226;   <a href="#pypdf._text_extraction">pypdf._text_extraction</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._fixed_width_page">pypdf._text_extraction._layout_mode._fixed_width_page</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._text_state_params">pypdf._text_extraction._layout_mode._text_state_params</a>
+ &#8226;   <a href="#pypdf._text_extraction._text_extractor">pypdf._text_extraction._text_extractor</a>
  &#8226;   <a href="#pypdf.filters">pypdf.filters</a>
  &#8226;   <a href="#pypdf.generic._base">pypdf.generic._base</a>
  &#8226;   <a href="#pypdf.generic._data_structures">pypdf.generic._data_structures</a>
@@ -28516,6 +28518,7 @@ imported by:
  &#8226;   <a href="#pandas.io._util">pandas.io._util</a>
  &#8226;   <a href="#pandas.io.common">pandas.io.common</a>
  &#8226;   <a href="#pandas.io.pickle">pandas.io.pickle</a>
+ &#8226;   <a href="#pandas.io.pytables">pandas.io.pytables</a>
 
   </div>
 
@@ -30677,7 +30680,8 @@ imported by:
   <a target="code" href="///C:/Users/GregMocanu/Documents/Loop%20Internet/Custom%20Code/all-in-one/PoleRework/venv/Lib/site-packages/pandas/core/arrays/string_.py" type="text/plain"><tt>pandas.core.arrays.string_</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
-    <a href="#__future__">__future__</a>
+    <a href="#'collections.abc'">'collections.abc'</a>
+ &#8226;   <a href="#__future__">__future__</a>
  &#8226;   <a href="#functools">functools</a>
  &#8226;   <a href="#numpy">numpy</a>
  &#8226;   <a href="#operator">operator</a>
@@ -37588,6 +37592,7 @@ imports:
  &#8226;   <a href="#pandas._libs.tslibs.timezones">pandas._libs.tslibs.timezones</a>
  &#8226;   <a href="#pandas._libs.writers">pandas._libs.writers</a>
  &#8226;   <a href="#pandas._typing">pandas._typing</a>
+ &#8226;   <a href="#pandas.compat">pandas.compat</a>
  &#8226;   <a href="#pandas.compat._optional">pandas.compat._optional</a>
  &#8226;   <a href="#pandas.compat.pickle_compat">pandas.compat.pickle_compat</a>
  &#8226;   <a href="#pandas.core.arrays">pandas.core.arrays</a>
@@ -39112,6 +39117,7 @@ imports:
  &#8226;   <a href="#pypdf._merger">pypdf._merger</a>
  &#8226;   <a href="#pypdf._page">pypdf._page</a>
  &#8226;   <a href="#pypdf._reader">pypdf._reader</a>
+ &#8226;   <a href="#pypdf._text_extraction">pypdf._text_extraction</a>
  &#8226;   <a href="#pypdf._version">pypdf._version</a>
  &#8226;   <a href="#pypdf._writer">pypdf._writer</a>
  &#8226;   <a href="#pypdf.constants">pypdf.constants</a>
@@ -39168,6 +39174,7 @@ imports:
   <div class="import">
 imported by:
     <a href="#pypdf._page">pypdf._page</a>
+ &#8226;   <a href="#pypdf._text_extraction._text_extractor">pypdf._text_extraction._text_extractor</a>
  &#8226;   <a href="#pypdf._writer">pypdf._writer</a>
 
   </div>
@@ -39506,6 +39513,7 @@ imports:
  &#8226;   <a href="#pypdf._reader">pypdf._reader</a>
  &#8226;   <a href="#pypdf._text_extraction">pypdf._text_extraction</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode">pypdf._text_extraction._layout_mode</a>
+ &#8226;   <a href="#pypdf._text_extraction._text_extractor">pypdf._text_extraction._text_extractor</a>
  &#8226;   <a href="#pypdf._utils">pypdf._utils</a>
  &#8226;   <a href="#pypdf.constants">pypdf.constants</a>
  &#8226;   <a href="#pypdf.errors">pypdf.errors</a>
@@ -39617,12 +39625,14 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#pypdf._page">pypdf._page</a>
+    <a href="#pypdf">pypdf</a>
+ &#8226;   <a href="#pypdf._page">pypdf._page</a>
  &#8226;   <a href="#pypdf._text_extraction">pypdf._text_extraction</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode">pypdf._text_extraction._layout_mode</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._fixed_width_page">pypdf._text_extraction._layout_mode._fixed_width_page</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._text_state_manager">pypdf._text_extraction._layout_mode._text_state_manager</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._text_state_params">pypdf._text_extraction._layout_mode._text_state_params</a>
+ &#8226;   <a href="#pypdf._text_extraction._text_extractor">pypdf._text_extraction._text_extractor</a>
 
   </div>
 
@@ -39759,6 +39769,26 @@ imports:
 imported by:
     <a href="#pypdf._text_extraction._layout_mode._fixed_width_page">pypdf._text_extraction._layout_mode._fixed_width_page</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._text_state_manager">pypdf._text_extraction._layout_mode._text_state_manager</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="pypdf._text_extraction._text_extractor"></a>
+  <a target="code" href="///C:/Users/GregMocanu/Documents/Loop%20Internet/Custom%20Code/all-in-one/PoleRework/venv/Lib/site-packages/pypdf/_text_extraction/_text_extractor.py" type="text/plain"><tt>pypdf._text_extraction._text_extractor</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#math">math</a>
+ &#8226;   <a href="#pypdf._cmap">pypdf._cmap</a>
+ &#8226;   <a href="#pypdf._text_extraction">pypdf._text_extraction</a>
+ &#8226;   <a href="#pypdf.generic">pypdf.generic</a>
+ &#8226;   <a href="#typing">typing</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#pypdf._page">pypdf._page</a>
 
   </div>
 
@@ -40019,6 +40049,7 @@ imported by:
  &#8226;   <a href="#pypdf._reader">pypdf._reader</a>
  &#8226;   <a href="#pypdf._text_extraction">pypdf._text_extraction</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._font">pypdf._text_extraction._layout_mode._font</a>
+ &#8226;   <a href="#pypdf._text_extraction._text_extractor">pypdf._text_extraction._text_extractor</a>
  &#8226;   <a href="#pypdf._utils">pypdf._utils</a>
  &#8226;   <a href="#pypdf._writer">pypdf._writer</a>
  &#8226;   <a href="#pypdf._xobj_image_helpers">pypdf._xobj_image_helpers</a>
@@ -47627,6 +47658,7 @@ imported by:
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._font">pypdf._text_extraction._layout_mode._font</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._text_state_manager">pypdf._text_extraction._layout_mode._text_state_manager</a>
  &#8226;   <a href="#pypdf._text_extraction._layout_mode._text_state_params">pypdf._text_extraction._layout_mode._text_state_params</a>
+ &#8226;   <a href="#pypdf._text_extraction._text_extractor">pypdf._text_extraction._text_extractor</a>
  &#8226;   <a href="#pypdf._utils">pypdf._utils</a>
  &#8226;   <a href="#pypdf._writer">pypdf._writer</a>
  &#8226;   <a href="#pypdf._xobj_image_helpers">pypdf._xobj_image_helpers</a>

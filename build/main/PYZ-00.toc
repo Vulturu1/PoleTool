@@ -3709,6 +3709,10 @@
    'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
    'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_text_extraction\\_layout_mode\\_text_state_params.py',
    'PYMODULE'),
+  ('pypdf._text_extraction._text_extractor',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_text_extraction\\_text_extractor.py',
+   'PYMODULE'),
   ('pypdf._utils',
    'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
    'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\pypdf\\_utils.py',
