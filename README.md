@@ -8,3 +8,7 @@ The Loop Internet PoleTool is an all-in-one program which provides all the tools
   Generates a Make Ready Notes excel sheet which is typically submitted alongside a strand map in Monday.com.
 - ### Generate Verizon Application
   Generates a Verizon Pole Application excel sheet which is formatted such that it can be submitted to Verizon right away.
+
+# How To Use
+Using the PoleTool is simple and straightforward. Let's dive in!
+
