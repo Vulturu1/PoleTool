@@ -232,8 +232,6 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                 # Add the new row to the DataFrame using .loc
                 verizonmmrs.loc[len(verizonmmrs)] = new_row_data
                 continue  # Move to the next instruction
-            if any(re.search(pw, value, re.IGNORECASE) for pw in power):
-                continue
             lines = re.split('\n+', value)
             for line in lines:
                 company_found = False

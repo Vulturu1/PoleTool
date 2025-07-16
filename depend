@@ -3,3 +3,4 @@ pandas
 openpyxl
 customtkinter
 tkinterdnd2
+pyinstaller
