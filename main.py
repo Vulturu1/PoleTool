@@ -62,7 +62,7 @@ class App(TkinterDnD.Tk):
         super().__init__()
 
         # --- Basic Window Setup ---
-        self.title("Loop Pole Refactor Tool v1.2")
+        self.title("Loop Pole Refactor Tool v1.6")
         self.geometry("800x500")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
