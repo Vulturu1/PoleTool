@@ -90,13 +90,17 @@ class App(TkinterDnD.Tk):
             label_text="File Operations"
         )
         scrollable_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
-        scrollable_frame.grid_columnconfigure(0, weight=1)
+        # --- CHANGE START: Configure columns for switch alignment ---
+        scrollable_frame.grid_columnconfigure(0, weight=1)  # Let the main column expand
+        scrollable_frame.grid_columnconfigure(1, weight=0)  # Keep switch column fixed
+        # --- CHANGE END ---
 
         # --- Checkbox Actions with Descriptions ---
         self.checkboxes = {}
+        self.use_api_switch = None  # Initialize switch attribute
         actions_with_descriptions = {
             "Prepare for Vetro": "Refactors file for seamless Vetro import.",
-            "Generate MRN": "Generates a formatted Make Ready Sheet.",
+            "Generate Make Ready Notes": "Generates a formatted Make Ready Sheet.",
             "Generate Verizon Application": "Outputs a Make Ready Sheet for Verizon owned poles.",
             "Generate Frontier Applications (Prototype)": "Outputs a folder for Frontier owned poles.",
         }
@@ -104,14 +108,25 @@ class App(TkinterDnD.Tk):
         row_counter = 0
         for action, description in actions_with_descriptions.items():
             checkbox = customtkinter.CTkCheckBox(scrollable_frame, text=action)
-            checkbox.grid(row=row_counter, column=0, padx=10, pady=(10, 0), sticky="w")
+            # --- CHANGE START: Adjust grid placement for switch ---
+            # The checkbox for Verizon will only span 1 column to make room for the switch
+            col_span = 1 if action == "Generate Verizon Application" else 2
+            checkbox.grid(row=row_counter, column=0, columnspan=col_span, padx=10, pady=(10, 0), sticky="w")
             self.checkboxes[action] = checkbox
+
+            # If it's the Verizon action, add the switch next to the checkbox
+            if action == "Generate Verizon Application":
+                self.use_api_switch = customtkinter.CTkSwitch(scrollable_frame, text="Use API")
+                self.use_api_switch.grid(row=row_counter, column=1, padx=10, pady=(10, 0), sticky="e")
+            # --- CHANGE END ---
+
             row_counter += 1
             desc_label = customtkinter.CTkLabel(
                 scrollable_frame, text=description,
                 font=customtkinter.CTkFont(size=11), text_color="gray60", justify="left"
             )
-            desc_label.grid(row=row_counter, column=0, padx=(38, 10), pady=(0, 10), sticky="nw")
+            # Description always spans both columns to be safely underneath everything
+            desc_label.grid(row=row_counter, column=0, columnspan=2, padx=(38, 10), pady=(0, 10), sticky="nw")
             row_counter += 1
 
         # --- Right Side (Drop Zone & Controls) ---
@@ -142,7 +157,7 @@ class App(TkinterDnD.Tk):
 
         self.output_path_label = customtkinter.CTkLabel(
             master=drop_zone_frame, text="No folder selected...",
-            text_color="gray", anchor='w' # Changed anchor to 'w' for consistency
+            text_color="gray", anchor='w'  # Changed anchor to 'w' for consistency
         )
         self.output_path_label.grid(row=1, column=1, padx=(5, 0), pady=(10, 10), sticky="w")
 
@@ -150,7 +165,7 @@ class App(TkinterDnD.Tk):
             master=drop_zone_frame,
             placeholder_text="(Optional) Output file name..."
         )
-        self.filename_entry.grid(row=2, column=0, columnspan=2,  padx=(0, 0), pady=(10, 10), sticky="ew")
+        self.filename_entry.grid(row=2, column=0, columnspan=2, padx=(0, 0), pady=(10, 10), sticky="ew")
 
         # 4. Process Button (Row is now 3)
         self.process_button = customtkinter.CTkButton(
@@ -191,12 +206,10 @@ class App(TkinterDnD.Tk):
             self.status_label.configure(text="Status: Please select an output folder.")
             return
 
-        # --- CHANGE START: Get filename from entry ---
         output_filename = self.filename_entry.get()
         if not output_filename:
             self.status_label.configure(text="Status: Please enter an output file name.")
             return
-        # --- CHANGE END ---
 
         selected_actions = [a for a, c in self.checkboxes.items() if c.get() == 1]
 
@@ -205,11 +218,20 @@ class App(TkinterDnD.Tk):
 
         file = fa.read_and_normalize(self.drop_label.file_path)
 
+        # --- CHANGE START: Get the state of the API switch ---
+        # Get the value (1 for on, 0 for off) from the switch if it exists
+        use_api = self.use_api_switch.get() == 1 if self.use_api_switch else False
+        # --- CHANGE END ---
+
         file_action_functions = {
             "Prepare for Vetro": lambda: fa.vetro_export(file, self.output_path, output_filename),
-            "Generate MRN": lambda: fa.generate_mrn(file, self.output_path, output_filename),
-            "Generate Verizon Application": lambda: fa.verizon_app(file, self.output_path, output_filename),
-            "Generate Frontier Applications (Prototype)": lambda: fa.frontier_pdf(file, self.output_path, output_filename),
+            "Generate Make Ready Notes": lambda: fa.generate_mrn(file, self.output_path, output_filename),
+            # --- CHANGE START: Pass the API switch state to the function ---
+            "Generate Verizon Application": lambda: fa.verizon_app(file, self.output_path, output_filename,
+                                                                   use_api=use_api),
+            # --- CHANGE END ---
+            "Generate Frontier Applications (Prototype)": lambda: fa.frontier_pdf(file, self.output_path,
+                                                                                  output_filename),
         }
 
         total_steps = len(selected_actions) if selected_actions else 1
@@ -223,7 +245,7 @@ class App(TkinterDnD.Tk):
                 else:
                     success = False
             self.progress_bar.set((i + 1) / total_steps)
-            self.update_idletasks() # Force UI update
+            self.update_idletasks()  # Force UI update
 
         if success:
             self.status_label.configure(text="Status: Complete!", text_color="lightgreen")
