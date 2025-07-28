@@ -1,267 +1,258 @@
-import customtkinter
-import os
-from tkinter import filedialog
-from tkinterdnd2 import DND_FILES, TkinterDnD
+import flet as ft
+import flet_map
 import file_actions as fa
 
+class ProgressBanner(ft.Banner):
+    def __init__(self, content=None, actions=None):
+        super().__init__(content, actions)
+        self.bgcolor = '#141414'
+        self.leading = ft.Icon(ft.Icons.CHANGE_CIRCLE_OUTLINED, color=ft.Colors.WHITE, size=30)
 
-class DraggableLabel(customtkinter.CTkLabel):
-    """
-    A custom label that can act as a drop target for files.
-    """
-
-    def __init__(self, master, app_instance, **kwargs):
-        super().__init__(master, **kwargs)
-        self.app = app_instance  # Store a reference to the main App instance
-        # Register the label as a drop target that accepts files.
-        self.drop_target_register(DND_FILES)
-        # Bind the drop event to the on_drop method.
-        self.dnd_bind('<<Drop>>', self.on_drop)
-        self.file_path = None
-
-    def on_drop(self, event):
-        """
-        Handles the file drop event.
-
-        Args:
-            event: The event object containing information about the dropped file.
-        """
-        # The file path is in event.data. It might have curly braces around it.
-        path = event.data.strip('{}')
-
-        # Check if the path is a valid file
-        if os.path.isfile(path):
-            self.file_path = path
-            # Get just the filename to display on the label
-            filename = os.path.basename(self.file_path)
-            self.configure(text=f"Loaded: {filename}")
-
-            # --- CHANGE START: Populate the new filename entry ---
-            # Get the filename without its extension
-            base_filename = os.path.splitext(filename)[0]
-            # Clear the entry and insert the new base filename
-            self.app.filename_entry.delete(0, customtkinter.END)
-            self.app.filename_entry.insert(0, base_filename)
-            # --- CHANGE END ---
-
-            # Enable the button in the main app
-            self.app.enable_button()
-        else:
-            # Handle cases where a folder or invalid item is dropped
-            self.configure(text="Invalid drop: Please drop a single file.")
-            self.file_path = None
-            self.app.disable_button()
+        info_col = ft.Column(
+            controls=[ft.Text(value="PoleTool is working. Please wait.", color=ft.Colors.WHITE), ft.ProgressBar(color=ft.Colors.BLUE)]
+        )
+        info = ft.Container(content=info_col)
+        self.content = info
+        self.actions = [ft.Container()]  # Actions must contain something. Using an empty container.
 
 
-class App(TkinterDnD.Tk):
-    """
-    The main application window which integrates customtkinter and tkinterdnd2.
-    """
+class FileAction(ft.Container):
+    def __init__(self, name, description):
+        super().__init__()
+        act_switch = ft.Switch()
+        self.title = ft.Text(value=name, color=ft.Colors.WHITE, size=16)
+        action = ft.Row(controls=[act_switch, self.title], spacing=10)
+        action_desc = ft.Text(description, color=ft.Colors.GREY_500, size=12)
+        items = ft.Column(
+            controls=[action, action_desc]
+        )
+        self.content = items
+        self.bgcolor = '#383838'
+        self.padding = 10
+        self.border_radius = 15
 
+
+class FileActions(ft.Column):
     def __init__(self):
         super().__init__()
+        vetro = FileAction(name='Prepare for Vetro', description='Prepares information for Vetro import in order to automatically math up attributes when imported.')
+        mrn = FileAction(name='Generate Make Ready Notes', description='Generates Make Ready Notes which are typically submitted with strand maps.')
+        verizon = FileAction(name='Generate Verizon Application', description='Generates Verizon applications by municipality to be submitted for pole applications')
+        frontier = FileAction(name='Generate Frontier Application', description='Generates Frontier applications to be submitted for pole applications')
+        self.controls = [vetro, mrn, verizon, frontier]
+        self.padding = 10
+        self.scroll = ft.ScrollMode.ADAPTIVE
 
-        # --- Basic Window Setup ---
-        self.title("Loop Pole Refactor Tool v1.6")
-        self.geometry("800x500")
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-        self.output_path = ""  # Variable to store the selected output path
+    def get_selected_actions(self):
+        selected_actions = []
+        for action in self.controls:
+            if action.content.controls[0].controls[0].value:
+                selected_actions.append(action.title.value)
+        return selected_actions
 
-        # --- Appearance ---
-        customtkinter.set_appearance_mode("Dark")
-        customtkinter.set_default_color_theme("blue")
 
-        # --- Main Container Frame ---
-        container_frame = customtkinter.CTkFrame(self, corner_radius=15)
-        container_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
-        container_frame.grid_rowconfigure(0, weight=1)
-        container_frame.grid_columnconfigure(0, weight=2, minsize=300)
-        container_frame.grid_columnconfigure(1, weight=3)
-
-        # --- Left Side (Actions) ---
-        actions_frame = customtkinter.CTkFrame(container_frame, fg_color="transparent")
-        actions_frame.grid(row=0, column=0, padx=(20, 10), pady=20, sticky="nsew")
-        actions_frame.grid_rowconfigure(0, weight=1)
-        actions_frame.grid_columnconfigure(0, weight=1)
-
-        scrollable_frame = customtkinter.CTkScrollableFrame(
-            actions_frame,
-            label_text="File Operations"
+class FileActionArea(ft.Container):
+    def __init__(self):
+        super().__init__()
+        self.width = 400
+        self.padding = 10
+        self.actions_list = FileActions()
+        items = ft.Column(
+            controls=[
+                ft.Text(value="File Actions", color=ft.Colors.WHITE, size=20),
+                ft.Container(content=self.actions_list, expand=True)
+            ]
         )
-        scrollable_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
-        # --- CHANGE START: Configure columns for switch alignment ---
-        scrollable_frame.grid_columnconfigure(0, weight=1)  # Let the main column expand
-        scrollable_frame.grid_columnconfigure(1, weight=0)  # Keep switch column fixed
-        # --- CHANGE END ---
+        self.content = items
+        self.bgcolor = '#242424'
 
-        # --- Checkbox Actions with Descriptions ---
-        self.checkboxes = {}
-        self.use_api_switch = None  # Initialize switch attribute
-        actions_with_descriptions = {
-            "Prepare for Vetro": "Refactors file for seamless Vetro import.",
-            "Generate Make Ready Notes": "Generates a formatted Make Ready Sheet.",
-            "Generate Verizon Application": "Outputs a Make Ready Sheet for Verizon owned poles.",
-            "Generate Frontier Applications (Prototype)": "Outputs a folder for Frontier owned poles.",
-        }
 
-        row_counter = 0
-        for action, description in actions_with_descriptions.items():
-            checkbox = customtkinter.CTkCheckBox(scrollable_frame, text=action)
-            # --- CHANGE START: Adjust grid placement for switch ---
-            # The checkbox for Verizon will only span 1 column to make room for the switch
-            col_span = 1 if action == "Generate Verizon Application" else 2
-            checkbox.grid(row=row_counter, column=0, columnspan=col_span, padx=10, pady=(10, 0), sticky="w")
-            self.checkboxes[action] = checkbox
-
-            # If it's the Verizon action, add the switch next to the checkbox
-            if action == "Generate Verizon Application":
-                self.use_api_switch = customtkinter.CTkSwitch(scrollable_frame, text="Use API")
-                self.use_api_switch.grid(row=row_counter, column=1, padx=10, pady=(10, 0), sticky="e")
-            # --- CHANGE END ---
-
-            row_counter += 1
-            desc_label = customtkinter.CTkLabel(
-                scrollable_frame, text=description,
-                font=customtkinter.CTkFont(size=11), text_color="gray60", justify="left"
-            )
-            # Description always spans both columns to be safely underneath everything
-            desc_label.grid(row=row_counter, column=0, columnspan=2, padx=(38, 10), pady=(0, 10), sticky="nw")
-            row_counter += 1
-
-        # --- Right Side (Drop Zone & Controls) ---
-        drop_zone_frame = customtkinter.CTkFrame(container_frame, fg_color="transparent")
-        drop_zone_frame.grid(row=0, column=1, padx=(10, 20), pady=20, sticky="nsew")
-        drop_zone_frame.grid_propagate(False)
-        drop_zone_frame.grid_columnconfigure(0, weight=0)
-        drop_zone_frame.grid_columnconfigure(1, weight=1)
-        drop_zone_frame.grid_rowconfigure(0, weight=1)
-
-        # --- Widgets in Drop Zone Frame (Reordered) ---
-
-        # 1. Drag and Drop Label
-        self.drop_label = DraggableLabel(
-            master=drop_zone_frame, app_instance=self,
-            text="Drag & Drop File Here", font=("Inter", 20),
-            text_color="gray", fg_color="#3c3c3c", corner_radius=10
+class PoleMap(flet_map.Map):
+    def __init__(self, **kwargs):
+        self.markers_ref = ft.Ref[flet_map.MarkerLayer]()
+        layers = [
+            flet_map.TileLayer(url_template="https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"),
+            flet_map.MarkerLayer(ref=self.markers_ref, markers=[])
+        ]
+        super().__init__(
+            layers=layers,
+            initial_center=flet_map.MapLatitudeLongitude(39.8832154904524, -98.1021255445858),
+            initial_zoom=3,
+            expand=True,
+            **kwargs
         )
-        self.drop_label.grid(row=0, column=0, columnspan=2, padx=0, pady=(0, 10), sticky="nsew")
 
-        # 2. Output Path Selection
-        self.output_path_button = customtkinter.CTkButton(
-            master=drop_zone_frame, text="Select Output",
-            command=self.select_output_path,
-            font=("Inter", 12)
+    def create_point(self, latitude, longitude):
+        point = flet_map.Marker(
+            coordinates=flet_map.MapLatitudeLongitude(latitude, longitude),
+            content=ft.Icon(ft.Icons.LOCATION_PIN, color=ft.Colors.RED_700),
         )
-        self.output_path_button.grid(row=1, column=0, padx=(0, 5), pady=(10, 10), sticky="w")
+        if self.markers_ref.current:
+            self.markers_ref.current.markers.append(point)
+            if self.page:
+                self.page.update()
 
-        self.output_path_label = customtkinter.CTkLabel(
-            master=drop_zone_frame, text="No folder selected...",
-            text_color="gray", anchor='w'  # Changed anchor to 'w' for consistency
+
+class FileIO(ft.Column):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.file_path = None
+        self.output_path = None
+        self.input_file = None
+        self.file_picker = ft.FilePicker(on_result=self.pick_files_result)
+        self.file_putter = ft.FilePicker(on_result=self.pick_dir_result)
+
+        self.selected_file = ft.Text(value="No files selected", size=12)
+        input_area = ft.Row(
+            [
+                ft.ElevatedButton(
+                    "Choose Input File",
+                    icon=ft.Icons.UPLOAD_FILE,
+                    on_click=lambda _: self.file_picker.pick_files(allow_multiple=True),
+                    icon_color=ft.Colors.GREEN,
+                    color=ft.Colors.WHITE
+                ),
+                self.selected_file
+            ]
         )
-        self.output_path_label.grid(row=1, column=1, padx=(5, 0), pady=(10, 10), sticky="w")
 
-        self.filename_entry = customtkinter.CTkEntry(
-            master=drop_zone_frame,
-            placeholder_text="(Optional) Output file name..."
+        self.selected_output_path = ft.Text(value="No output path selected", size=12)
+        output_area = ft.Row(
+            [
+                ft.ElevatedButton(
+                    "Choose Output Path",
+                    icon=ft.Icons.DRIVE_FILE_MOVE_ROUNDED,
+                    on_click=lambda _: self.file_putter.get_directory_path(),
+                    icon_color=ft.Colors.YELLOW,
+                    color=ft.Colors.WHITE
+                ),
+                self.selected_output_path
+            ]
         )
-        self.filename_entry.grid(row=2, column=0, columnspan=2, padx=(0, 0), pady=(10, 10), sticky="ew")
 
-        # 4. Process Button (Row is now 3)
-        self.process_button = customtkinter.CTkButton(
-            master=drop_zone_frame, text="Process File", font=("Inter", 16),
-            state="disabled", command=self.process_file_callback,
-            corner_radius=10, height=40
+        self.output_field = ft.TextField(label="Output File Name", hint_text="Enter a file name", expand=True, text_size=12)
+        process_button = ft.ElevatedButton("Process", on_click=self.process_file, width=100, color=ft.Colors.PURPLE_300)
+        process_area = ft.Row(
+            [
+                self.output_field,
+                process_button
+            ]
         )
-        self.process_button.grid(row=3, column=0, columnspan=2, padx=0, pady=(10, 10), sticky="ew")
 
-        # 5. Progress Bar (Row is now 4)
-        self.progress_bar = customtkinter.CTkProgressBar(master=drop_zone_frame)
-        self.progress_bar.set(0)
-        self.progress_bar.grid(row=4, column=0, columnspan=2, padx=0, pady=(10, 5), sticky="ew")
+        self.controls = [input_area, output_area, process_area]
 
-        # 6. Status Label (Row is now 5)
-        self.status_label = customtkinter.CTkLabel(master=drop_zone_frame, text="Status: Idle", text_color="gray")
-        self.status_label.grid(row=5, column=0, columnspan=2, padx=0, pady=(5, 10), sticky="ew")
-
-    def select_output_path(self):
-        """Opens a dialog to select a directory and updates the label."""
-        path = filedialog.askdirectory(title="Select Output Folder")
-        if path:
-            self.output_path = path
-            display_path = path
-            if len(display_path) > 40:
-                display_path = "..." + display_path[-37:]
-            self.output_path_label.configure(text=display_path, text_color="white")
-
-    def process_file_callback(self):
-        """
-        This function is called when the button is clicked.
-        It simulates a process and updates the progress bar.
-        """
-        if not self.drop_label.file_path:
-            self.status_label.configure(text="Status: Please drop a file first.")
-            return
-        if not self.output_path:
-            self.status_label.configure(text="Status: Please select an output folder.")
-            return
-
-        output_filename = self.filename_entry.get()
-        if not output_filename:
-            self.status_label.configure(text="Status: Please enter an output file name.")
-            return
-
-        selected_actions = [a for a, c in self.checkboxes.items() if c.get() == 1]
-
-        self.status_label.configure(text="Status: Processing...", text_color="white")
-        self.progress_bar.set(0)
-
-        file = fa.read_and_normalize(self.drop_label.file_path)
-
-        # --- CHANGE START: Get the state of the API switch ---
-        # Get the value (1 for on, 0 for off) from the switch if it exists
-        use_api = self.use_api_switch.get() == 1 if self.use_api_switch else False
-        # --- CHANGE END ---
-
-        file_action_functions = {
-            "Prepare for Vetro": lambda: fa.vetro_export(file, self.output_path, output_filename),
-            "Generate Make Ready Notes": lambda: fa.generate_mrn(file, self.output_path, output_filename),
-            # --- CHANGE START: Pass the API switch state to the function ---
-            "Generate Verizon Application": lambda: fa.verizon_app(file, self.output_path, output_filename,
-                                                                   use_api=use_api),
-            # --- CHANGE END ---
-            "Generate Frontier Applications (Prototype)": lambda: fa.frontier_pdf(file, self.output_path,
-                                                                                  output_filename),
-        }
-
-        total_steps = len(selected_actions) if selected_actions else 1
-        success = True
-        for i, action in enumerate(selected_actions or ["Processing..."]):
-            self.status_label.configure(text=f"Status: {action}")
-            self.update_idletasks()  # Force UI update
-            if action in file_action_functions:
-                if file_action_functions[action]():
-                    success = True
-                else:
-                    success = False
-            self.progress_bar.set((i + 1) / total_steps)
-            self.update_idletasks()  # Force UI update
-
-        if success:
-            self.status_label.configure(text="Status: Complete!", text_color="lightgreen")
+    def pick_dir_result(self, e: ft.FilePickerResultEvent):
+        if e.path:
+            self.output_path = e.path
+            self.selected_output_path.value = e.path
         else:
-            self.status_label.configure(text="Status: Error!", text_color="red")
+            self.selected_output_path.value = "Cancelled!"
+        self.selected_output_path.update()
 
-    def enable_button(self):
-        """Enables the process button."""
-        self.process_button.configure(state="normal")
+    def pick_files_result(self, e: ft.FilePickerResultEvent):
+        if e.files:
+            self.file_path = e.files[0].path
+        self.selected_file.value = (", ".join(map(lambda f: f.name, e.files)) if e.files else "Cancelled!")
+        pole_points = fa.get_pole_points(self.file_path)
+        for point in pole_points:
+            map_and_file.map.create_point(point[0], point[1])
+        self.selected_file.update()
 
-    def disable_button(self):
-        """Disables the process button."""
-        self.process_button.configure(state="disabled")
+    def process_file(self, _):
+        if not self.file_path:
+            self.selected_file.color = ft.Colors.RED_700
+            self.update()
+            return
+        else:
+            self.selected_file.color = ft.Colors.WHITE
+
+        if not self.output_path:
+            self.selected_output_path.color = ft.Colors.RED_700
+            self.update()
+            return
+        else:
+            self.selected_output_path.color = ft.Colors.WHITE
+
+        if not self.output_field.value:
+            self.output_field.border_color = ft.Colors.RED_700
+            self.update()
+            return
+        else:
+            self.output_field.border_color = ft.Colors.WHITE
+
+        self.update()
+
+        banner = ProgressBanner()
+        self.page.open(banner)
+        footer.status.value = 'Working...'
+        self.page.update()
+        file = fa.read_and_normalize(self.file_path)
+        file_operations_dict = {
+            'Prepare for Vetro': lambda: fa.vetro_export(file, self.output_path, self.output_field.value),
+            'Generate Make Ready Notes': lambda: fa.generate_mrn(file, self.output_path, self.output_field.value),
+            'Generate Verizon Application': lambda: fa.verizon_app(file, self.output_path, self.output_field.value),
+            'Generate Frontier Application': lambda: fa.frontier_pdf(file, self.output_path, self.output_field.value)
+        }
+        operations = file_action.actions_list.get_selected_actions()
+        for operation in operations:
+            file_operations_dict[operation]()
+
+        footer.status.value = 'Complete'
+        footer.status.color = ft.Colors.GREEN
+        self.page.close(banner)
+        self.page.update()
 
 
-# --- Main Execution ---
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+class MapAndFileArea(ft.Container):
+    def __init__(self):
+        super().__init__()
+        self.width = 600
+        self.padding = 10
+        self.file_io = FileIO()
+        self.map = PoleMap()
+        items = ft.Column([self.map, self.file_io])
+        self.content = items
+        self.bgcolor = '#383838'
+
+
+class Footer(ft.Container):
+    def __init__(self):
+        super().__init__()
+        self.status = ft.Text(value="Ready", color=ft.Colors.WHITE)
+        self.version = ft.Text(value='PoleTool V2.0', color=ft.Colors.GREY_700)
+        self.padding = 5
+        self.bgcolor = '#141414'
+        holder = ft.Row(controls=[self.version, self.status], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+        self.content = holder
+
+
+file_action = FileActionArea()
+map_and_file = MapAndFileArea()
+footer = Footer()
+
+def main(page):
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.window.width = 1015
+    page.window.height = 700
+    page.window.resizable = False
+    page.title = "PoleTool v2.0 - by Greg Mocanu"
+    page.bgcolor = '#242424'
+    page.padding = 0
+    page.spacing = 0
+
+    page.overlay.append(map_and_file.file_io.file_picker)
+    page.overlay.append(map_and_file.file_io.file_putter)
+
+    areas = ft.Row(
+        controls=[
+            file_action,
+            map_and_file
+        ],
+        expand=True,
+        spacing=0
+    )
+    page.add(areas)
+    page.add(footer)
+
+
+ft.app(main)

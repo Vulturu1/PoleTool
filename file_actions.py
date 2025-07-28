@@ -4,7 +4,18 @@ import os
 import math
 import pypdf
 import datetime
-from geopy.geocoders import Nominatim
+
+
+def get_pole_points(file_path) -> list[tuple]:
+    output = []
+    file = pandas.read_excel(file_path)
+    file = file[['latitude', 'longitude']]
+    lat = file['latitude'].tolist()
+    lon = file['longitude'].tolist()
+    for i in range(len(lat)):
+        output.append((lat[i], lon[i]))
+    return output
+
 
 def read_and_normalize(file_path) -> pandas.DataFrame:
     file = pandas.read_excel(file_path)
@@ -105,7 +116,7 @@ def generate_mrn(file: pandas.DataFrame, path, name) -> bool:
         return False
 
 
-def verizon_app(file: pandas.DataFrame, path, name, use_api) -> bool:
+def verizon_app(file: pandas.DataFrame, path, name) -> bool:
 
     def split_and_convert(target: str) -> int:
         if not target or not isinstance(target, str):
@@ -128,11 +139,8 @@ def verizon_app(file: pandas.DataFrame, path, name, use_api) -> bool:
         return address.split(', ')[0].split(' ', maxsplit=1)[1]
 
     def get_municipality(latlon: str) -> str:
-        location = locator.reverse(latlon, exactly_one=True)
-        address_details = location.raw['address']
-        m = address_details.get('municipality') or address_details.get('city') or address_details.get(
-            'town') or address_details.get('village')
-        return m
+        # FIXME: Function should look at vetro data and determine what municipality a pole is in
+        pass
 
     try:
         file = file.loc[file['Owner'] == 'Verizon', ['Latitude', 'Longitude', 'SCID', 'Owner', 'Tag', 'verizon pennsylvania inc._tag',
@@ -295,114 +303,48 @@ def verizon_app(file: pandas.DataFrame, path, name, use_api) -> bool:
                 # Format action
                 action = actions[str(action)]
 
-                if use_api:
-                    locator = Nominatim(user_agent="PoleRework", timeout=100)
+                new_row_data_mrs = {
+                    'Pole Ref #': file.loc[x, 'SCID'],
+                    'Telco Pole #': file.loc[x, 'verizon pennsylvania inc._tag'],
+                    'ELCO Pole #': file.loc[x, 'Tag'],
+                    'Attacher Company': attacher_company,
+                    'Attachment Type': attachment_type,
+                    'Action': action,
+                    'Existing Height': existing_height,
+                    'New Height': new_height,
+                    'Quantity': '1'
+                }
+                verizonmmrs.loc[len(verizonmmrs)] = new_row_data_mrs
 
-                    new_row_data_mrs = {
-                        'Pole Ref #': file.loc[x, 'SCID'],
-                        'Telco Pole #': file.loc[x, 'verizon pennsylvania inc._tag'],
-                        'ELCO Pole #': file.loc[x, 'Tag'],
-                        'Attacher Company': attacher_company,
-                        'Attachment Type': attachment_type,
-                        'Action': action,
-                        'Existing Height': existing_height,
-                        'New Height': new_height,
-                        'Quantity': '1',
-                        'Municipality': get_municipality(f'{file.loc[x, 'Latitude']}, {file.loc[x, 'Longitude']}')
-                    }
-                    verizonmmrs.loc[len(verizonmmrs)] = new_row_data_mrs
+                new_row_data_info = {
+                    'Pole Ref #': new_row_data_mrs['Pole Ref #'],
+                    'Telco Pole #': new_row_data_mrs['Telco Pole #'],
+                    'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
+                    'Attachment Description': attachment_type,
+                    'Attachment Height': new_height
+                }
+                if attacher_company == 'LOOP INTERNET HOLDCO LLC':
+                    verizoninfo.loc[len(verizoninfo)] = new_row_data_info
 
-                    new_row_data_info = {
-                        'Pole Ref #': new_row_data_mrs['Pole Ref #'],
-                        'Telco Pole #': new_row_data_mrs['Telco Pole #'],
-                        'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
-                        'Attachment Description': attachment_type,
-                        'Attachment Height': new_height,
-                        'Municipality': new_row_data_mrs['Municipality']
-                    }
-                    if attacher_company == 'LOOP INTERNET HOLDCO LLC':
-                        verizoninfo.loc[len(verizoninfo)] = new_row_data_info
+                new_row_data_details = {
+                    'Pole Ref #': new_row_data_mrs['Pole Ref #'],
+                    'Telco Pole #': new_row_data_mrs['Telco Pole #'],
+                    'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
+                    'Street Name': get_street_name(file.loc[x, 'address']),
+                    'Latitude': file.loc[x, 'Latitude'],
+                    'Longitude': file.loc[x, 'Longitude'],
+                }
+                if not verizondetails['Pole Ref #'].isin(
+                        [file.loc[x, 'SCID']]).any() and attacher_company == 'LOOP INTERNET HOLDCO LLC':
+                    verizondetails.loc[len(verizondetails)] = new_row_data_details
 
-                    new_row_data_details = {
-                        'Pole Ref #': new_row_data_mrs['Pole Ref #'],
-                        'Telco Pole #': new_row_data_mrs['Telco Pole #'],
-                        'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
-                        'Street Name': get_street_name(file.loc[x, 'address']),
-                        'Latitude': file.loc[x, 'Latitude'],
-                        'Longitude': file.loc[x, 'Longitude'],
-                        'Municipality': new_row_data_mrs['Municipality']
-                    }
-                    if not verizondetails['Pole Ref #'].isin([file.loc[x, 'SCID']]).any() and attacher_company == 'LOOP INTERNET HOLDCO LLC':
-                        verizondetails.loc[len(verizondetails)] = new_row_data_details
-                else:
-                    new_row_data_mrs = {
-                        'Pole Ref #': file.loc[x, 'SCID'],
-                        'Telco Pole #': file.loc[x, 'verizon pennsylvania inc._tag'],
-                        'ELCO Pole #': file.loc[x, 'Tag'],
-                        'Attacher Company': attacher_company,
-                        'Attachment Type': attachment_type,
-                        'Action': action,
-                        'Existing Height': existing_height,
-                        'New Height': new_height,
-                        'Quantity': '1'
-                    }
-                    verizonmmrs.loc[len(verizonmmrs)] = new_row_data_mrs
+            verizoninfo['Attachment Description'] = verizoninfo['Attachment Description'].replace('Down Guy', 'Anchor')
 
-                    new_row_data_info = {
-                        'Pole Ref #': new_row_data_mrs['Pole Ref #'],
-                        'Telco Pole #': new_row_data_mrs['Telco Pole #'],
-                        'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
-                        'Attachment Description': attachment_type,
-                        'Attachment Height': new_height
-                    }
-                    if attacher_company == 'LOOP INTERNET HOLDCO LLC':
-                        verizoninfo.loc[len(verizoninfo)] = new_row_data_info
-
-                    new_row_data_details = {
-                        'Pole Ref #': new_row_data_mrs['Pole Ref #'],
-                        'Telco Pole #': new_row_data_mrs['Telco Pole #'],
-                        'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
-                        'Street Name': get_street_name(file.loc[x, 'address']),
-                        'Latitude': file.loc[x, 'Latitude'],
-                        'Longitude': file.loc[x, 'Longitude'],
-                    }
-                    if not verizondetails['Pole Ref #'].isin(
-                            [file.loc[x, 'SCID']]).any() and attacher_company == 'LOOP INTERNET HOLDCO LLC':
-                        verizondetails.loc[len(verizondetails)] = new_row_data_details
-
-                verizoninfo['Attachment Description'] = verizoninfo['Attachment Description'].replace('Down Guy', 'Anchor')
-
-        if use_api:
-            municipalities = verizonmmrs['Municipality'].unique()
-            # Check for municipalities
-            for municipality in municipalities:
-                print(f"Processing data for {municipality}...")
-
-                mmrs_filtered = verizonmmrs[verizonmmrs['Municipality'] == municipality]
-                ids_for_municipality = mmrs_filtered['Pole Ref #'].unique()
-                info_filtered = verizoninfo[verizoninfo['Pole Ref #'].isin(ids_for_municipality)]
-                details_filtered = verizondetails[verizondetails['Pole Ref #'].isin(ids_for_municipality)]
-
-                # 4. Define the output filename using the municipality's name
-                output_filename = f'{path}/{name}-{municipality}-verizon-MRS.xlsx'
-
-                # 5. Write the filtered DataFrames to a new Excel file
-                with pandas.ExcelWriter(output_filename, engine='openpyxl') as writer:
-                    # Before writing, drop the 'Municipality' column as requested
-                    mmrs_output = mmrs_filtered.drop(columns=['Municipality'])
-                    info_output = info_filtered.drop(columns=['Municipality'])
-                    details_output = details_filtered.drop(columns=['Municipality'])
-
-                    mmrs_output.to_excel(writer, sheet_name='Make Ready', index=False)
-                    info_output.to_excel(writer, sheet_name='Attachment Info', index=False)
-                    details_output.to_excel(writer, sheet_name='Pole Details', index=False)
-            return True
-        else:
-            with pandas.ExcelWriter(f'{path}/{name}-verizon-MRS.xlsx', engine='openpyxl') as writer:
-                verizonmmrs.to_excel(writer, sheet_name='Make Ready', index=False)
-                verizoninfo.to_excel(writer, sheet_name='Attachment Info', index=False)
-                verizondetails.to_excel(writer, sheet_name='Pole Details', index=False)
-            return True
+        with pandas.ExcelWriter(f'{path}/{name}-verizon-MRS.xlsx', engine='openpyxl') as writer:
+            verizonmmrs.to_excel(writer, sheet_name='Make Ready', index=False)
+            verizoninfo.to_excel(writer, sheet_name='Attachment Info', index=False)
+            verizondetails.to_excel(writer, sheet_name='Pole Details', index=False)
+        return True
 
     except Exception as e:
         with open(f'{path}/error.log', 'a+') as f:
