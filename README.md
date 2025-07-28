@@ -25,8 +25,8 @@ Using the PoleTool is simple and straightforward. Let's dive in!
 On the right side of the application is your action checklist. From here you can select one or more file operations you'd like to execute on your input file. On the right side of the application is the file management zone and start button. From here you will be able to input a file, select the ouput for your newly generated file(s), and name the output files.
 
 ## Steps:
-1. Click the Select Input File button to select you input Node Attributes sheet.
-2. Click the Select Output button to choose the output location for your new files.
+1. Click the Choose Input File button to select you input Node Attributes sheet.
+2. Click the Choose Output button to choose the output location for your new files.
 3. Enter in an output file name.
 4. Select which operation(s) you would like to perform on the file.
 5. Click Process and wait.
