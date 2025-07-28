@@ -4,7 +4,29 @@ import os
 import math
 import pypdf
 import datetime
+import geopandas
+import sys
 
+# FIXME :: POINTS ARE CREATED INCORRECTLY
+def load_municipality_data(shp_file: str = None) -> dict:
+    if not shp_file:
+        try: source = sys._MEIPASS
+        except: source =  os.path.abspath(".")
+        source_path = os.path.join(source, 'vetro_source.zip')
+    else:
+        source_path = shp_file
+    municipality_geo_data = {}
+    datafromfile = geopandas.read_file(source_path)
+    datafromfile = datafromfile[['Name', 'geometry']]
+    name = datafromfile['Name'].tolist()
+    geo = datafromfile['geometry'].tolist()
+    for i in range(len(name)):
+        if name[i] == 'None':
+            continue
+        municip = name[i]
+        coords = str(geo[i])[10:len(str(geo[i]))-2].split(', ')
+        municipality_geo_data[municip] = coords
+    return municipality_geo_data
 
 def get_pole_points(file_path) -> list[tuple]:
     output = []
@@ -20,7 +42,6 @@ def get_pole_points(file_path) -> list[tuple]:
             )
         )
     return output
-
 
 def read_and_normalize(file_path) -> pandas.DataFrame:
     file = pandas.read_excel(file_path)
@@ -76,7 +97,6 @@ def read_and_normalize(file_path) -> pandas.DataFrame:
 
     return file
 
-
 def combine_tags(file) -> pandas.DataFrame:
     # Modify tag column
     tags_list = ['verizon pennsylvania inc._tag', 'pole_tag', 'unknown_tag']
@@ -96,7 +116,6 @@ def combine_tags(file) -> pandas.DataFrame:
     file['Tag'] = tag_final
     return file
 
-
 def vetro_export(file: pandas.DataFrame, path, name) -> bool:
     try:
         file = combine_tags(file)
@@ -108,7 +127,6 @@ def vetro_export(file: pandas.DataFrame, path, name) -> bool:
             f.write(str(e))
         return False
 
-
 def generate_mrn(file: pandas.DataFrame, path, name) -> bool:
     try:
         file = combine_tags(file)
@@ -119,7 +137,6 @@ def generate_mrn(file: pandas.DataFrame, path, name) -> bool:
         with open(f'{path}/error.log', 'a+') as f:
             f.write(str(e))
         return False
-
 
 def verizon_app(file: pandas.DataFrame, path, name) -> bool:
 
@@ -355,7 +372,6 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
         with open(f'{path}/error.log', 'a+') as f:
             f.write(str(e))
         return False
-
 
 def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
 

@@ -70,9 +70,11 @@ class FileActionArea(ft.Container):
 class PoleMap(flet_map.Map):
     def __init__(self, **kwargs):
         self.markers_ref = ft.Ref[flet_map.MarkerLayer]()
+        self.polygons_ref = ft.Ref[flet_map.PolygonLayer]()
         layers = [
             flet_map.TileLayer(url_template="https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"),
-            flet_map.MarkerLayer(ref=self.markers_ref, markers=[])
+            flet_map.MarkerLayer(ref=self.markers_ref, markers=[]),
+            flet_map.PolygonLayer(ref=self.polygons_ref, polygons=[])
         ]
         super().__init__(
             layers=layers,
@@ -105,6 +107,8 @@ class PoleMap(flet_map.Map):
             'City of Scranton Office of Economic & Community Development': ft.Colors.GREEN_200,
             'CTSI, LLC, dba Frontier Communications': ft.Colors.AMBER_700
         }
+        self.municipality_geo_data = fa.load_municipality_data()
+        self.create_municipality_points()
 
     def create_point(self, latitude, longitude, company):
         point = flet_map.Marker(
@@ -115,6 +119,23 @@ class PoleMap(flet_map.Map):
             self.markers_ref.current.markers.append(point)
             if self.page:
                 self.page.update()
+
+    # FIXME :: POINTS ARE CREATED INCORRECTLY
+    def create_municipality_points(self):
+        for municipality in self.municipality_geo_data:
+            polygon = flet_map.PolygonMarker(
+                coordinates=[
+                    flet_map.MapLatitudeLongitude(pair.split(' ')[0], pair.split(' ')[1]) for pair in self.municipality_geo_data[municipality]
+                ],
+                border_stroke_width=2,
+                border_color=ft.Colors.WHITE10,
+                color=ft.Colors.with_opacity(0.3, ft.Colors.WHITE10),
+                label=municipality
+            )
+            if self.markers_ref.current:
+                self.polygons_ref.current.polygons.append(polygon)
+                if self.page:
+                    self.page.update()
 
 
 class FileIO(ft.Column):
