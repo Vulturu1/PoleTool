@@ -243,7 +243,7 @@ class Footer(ft.Container):
     def __init__(self):
         super().__init__()
         self.status = ft.Text(value="Ready", color=ft.Colors.WHITE)
-        self.version = ft.Text(value='PoleTool V2.0', color=ft.Colors.GREY_700)
+        self.version = ft.Text(value='PoleTool V2.1', color=ft.Colors.GREY_700)
         self.padding = 5
         self.bgcolor = '#141414'
         holder = ft.Row(controls=[self.version, self.status], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
@@ -259,7 +259,7 @@ def main(page):
     page.window.width = 1015
     page.window.height = 700
     page.window.resizable = False
-    page.title = "PoleTool v2.0 - by Greg Mocanu"
+    page.title = "PoleTool v2.1 - by Greg Mocanu"
     page.bgcolor = '#242424'
     page.padding = 0
     page.spacing = 0

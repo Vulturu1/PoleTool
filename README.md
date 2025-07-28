@@ -1,7 +1,7 @@
 # Loop Internet PoleTool Overview
 The Loop Internet PoleTool is an all-in-one program which provides all the tools necessary to parse pole data and prepare/export it in different forms to help make the Design/GIS team's job easier!
 
-## Features *(Latest v2.0)*
+## Features *(Latest v2.1)*
 - ### Prepare for Vetro
   Refactors and formats pole data to a new Excel sheet such that when it is imported to Vetro there is no need to match up attributes manually. This action also helps with importing data into QGIS.
 - ### Generate Make Ready Notes
@@ -16,7 +16,7 @@ The Loop Internet PoleTool is an all-in-one program which provides all the tools
   PoleTool now uses a new UI library built on Google Flutter for a cleaner-look and better application performance.
 - ### Pole Preview Map
   In the PoleTool application, there is now a preview map window which displays the locations of all the poles from the inputted xlsx file.
-
+  Additionally the poles are color coded based on pole owner. The colors are mirrored from vetro. GREY POLES ARE NOT POLES THEY ARE REFERENCES.
 # How To Use
 Using the PoleTool is simple and straightforward. Let's dive in!
 

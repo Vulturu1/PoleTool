@@ -1563,6 +1563,14 @@
    'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
    'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\flet\\version.py',
    'PYMODULE'),
+  ('flet_desktop',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\flet_desktop\\__init__.py',
+   'PYMODULE'),
+  ('flet_desktop.version',
+   'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
+   'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\flet_desktop\\version.py',
+   'PYMODULE'),
   ('flet_map',
    'C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom '
    'Code\\all-in-one\\PoleRework\\venv\\Lib\\site-packages\\flet_map\\__init__.py',
