@@ -107,7 +107,6 @@ class PoleMap(flet_map.Map):
         }
 
     def create_point(self, latitude, longitude, company):
-        print(company)  # FIXME: REMOVE ME
         point = flet_map.Marker(
             coordinates=flet_map.MapLatitudeLongitude(latitude, longitude),
             content=ft.Icon(ft.Icons.LOCATION_PIN, size=15, color=self.point_colors.get(company) or ft.Colors.GREY),
