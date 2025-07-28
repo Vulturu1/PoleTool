@@ -82,10 +82,35 @@ class PoleMap(flet_map.Map):
             **kwargs
         )
 
-    def create_point(self, latitude, longitude):
+        self.point_colors = {
+            'PPL Company': ft.Colors.RED_700,
+            'Verizon Pennsylvania Inc.': ft.Colors.GREEN_700,
+            'Frontier Communications of PA. - New Holland': ft.Colors.PURPLE_700,
+            'Frontier Communications of PA. - New Holland Telecom': ft.Colors.PURPLE_700,
+            'Frontier Communications - Lakewood': ft.Colors.PURPLE_700,
+            'Frontier Communications - Lakewood Telecom': ft.Colors.PURPLE_700,
+            'Commonwealth Telephone Co.  dba Frontier Comm.': ft.Colors.PURPLE_700,
+            'Commonwealth Telephone Co.  dba Frontier Comm. Telecom': ft.Colors.PURPLE_700,
+            'Loop Telecom Pennsylvania LLC': ft.Colors.BLUE_700,
+            'UGI Utilities - Electric Division': ft.Colors.ORANGE_700,
+            'UGI Utilities - Gas': ft.Colors.ORANGE_700,
+            'UGI PENN NATURAL GAS, INC': ft.Colors.ORANGE_700,
+            'Service Electric Cablevision Inc - Mahanoy City': ft.Colors.BLUE_200,
+            'Service Electric Cablevision': ft.Colors.BLUE_200,
+            'Service Electric Cable TV Inc.': ft.Colors.BLUE_200,
+            'Service Electric Company - Wilkes-Barre': ft.Colors.BLUE_200,
+            'Upper Oxford Twp, Chester Co.': ft.Colors.TEAL_700,
+            'City of Scranton - Wireless': ft.Colors.GREEN_200,
+            'City of Scranton': ft.Colors.GREEN_200,
+            'City of Scranton Office of Economic & Community Development': ft.Colors.GREEN_200,
+            'CTSI, LLC, dba Frontier Communications': ft.Colors.AMBER_700
+        }
+
+    def create_point(self, latitude, longitude, company):
+        print(company)  # FIXME: REMOVE ME
         point = flet_map.Marker(
             coordinates=flet_map.MapLatitudeLongitude(latitude, longitude),
-            content=ft.Icon(ft.Icons.LOCATION_PIN, color=ft.Colors.RED_700),
+            content=ft.Icon(ft.Icons.LOCATION_PIN, size=15, color=self.point_colors.get(company) or ft.Colors.GREY),
         )
         if self.markers_ref.current:
             self.markers_ref.current.markers.append(point)
@@ -155,7 +180,7 @@ class FileIO(ft.Column):
         self.selected_file.value = (", ".join(map(lambda f: f.name, e.files)) if e.files else "Cancelled!")
         pole_points = fa.get_pole_points(self.file_path)
         for point in pole_points:
-            map_and_file.map.create_point(point[0], point[1])
+            map_and_file.map.create_point(point[0][0], point[0][1], point[1])
         self.selected_file.update()
 
     def process_file(self, _):

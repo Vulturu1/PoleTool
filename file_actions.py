@@ -9,11 +9,16 @@ import datetime
 def get_pole_points(file_path) -> list[tuple]:
     output = []
     file = pandas.read_excel(file_path)
-    file = file[['latitude', 'longitude']]
+    file = file[['latitude', 'longitude', 'pole_owner']]
     lat = file['latitude'].tolist()
     lon = file['longitude'].tolist()
+    owner = file['pole_owner'].tolist()
     for i in range(len(lat)):
-        output.append((lat[i], lon[i]))
+        output.append(
+            (
+                (lat[i], lon[i]), owner[i]
+            )
+        )
     return output
 
 
