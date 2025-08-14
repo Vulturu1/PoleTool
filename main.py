@@ -107,8 +107,8 @@ class PoleMap(flet_map.Map):
             'City of Scranton Office of Economic & Community Development': ft.Colors.GREEN_200,
             'CTSI, LLC, dba Frontier Communications': ft.Colors.AMBER_700
         }
-        self.municipality_geo_data = fa.load_municipality_data()
-        self.create_municipality_points()
+        #self.municipality_geo_data = fa.load_municipality_data()
+        #self.create_municipality_points()
 
     def create_point(self, latitude, longitude, company):
         point = flet_map.Marker(
@@ -125,7 +125,7 @@ class PoleMap(flet_map.Map):
         for municipality in self.municipality_geo_data:
             polygon = flet_map.PolygonMarker(
                 coordinates=[
-                    flet_map.MapLatitudeLongitude(pair.split(' ')[0], pair.split(' ')[1]) for pair in self.municipality_geo_data[municipality]
+                    flet_map.MapLatitudeLongitude(pair[0], pair[1]) for pair in self.municipality_geo_data[municipality]
                 ],
                 border_stroke_width=2,
                 border_color=ft.Colors.WHITE10,
@@ -199,6 +199,7 @@ class FileIO(ft.Column):
             self.file_path = e.files[0].path
         self.selected_file.value = (", ".join(map(lambda f: f.name, e.files)) if e.files else "Cancelled!")
         pole_points = fa.get_pole_points(self.file_path)
+        map_and_file.map.markers_ref.current.markers = []
         for point in pole_points:
             map_and_file.map.create_point(point[0][0], point[0][1], point[1])
         self.selected_file.update()

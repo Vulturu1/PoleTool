@@ -6,6 +6,7 @@ import pypdf
 import datetime
 import geopandas
 import sys
+import pyproj
 
 # FIXME :: POINTS ARE CREATED INCORRECTLY
 def load_municipality_data(shp_file: str = None) -> dict:
@@ -17,15 +18,27 @@ def load_municipality_data(shp_file: str = None) -> dict:
         source_path = shp_file
     municipality_geo_data = {}
     datafromfile = geopandas.read_file(source_path)
-    datafromfile = datafromfile[['Name', 'geometry']]
-    name = datafromfile['Name'].tolist()
+    datafromfile = datafromfile[['MUNICIPA_1', 'geometry']]
+    name = datafromfile['MUNICIPA_1'].tolist()
     geo = datafromfile['geometry'].tolist()
+    in_proj = pyproj.Proj(init='epsg:3857')
+    out_proj = pyproj.Proj(init='epsg:4326')
+
     for i in range(len(name)):
         if name[i] == 'None':
             continue
         municip = name[i]
-        coords = str(geo[i])[10:len(str(geo[i]))-2].split(', ')
-        municipality_geo_data[municip] = coords
+        coord_temp = str(geo[i])
+        coord_temp = coord_temp[coord_temp.rfind('(')+1:coord_temp.find(')', coord_temp.rfind('('))].split(', ')
+        municipality_points = []
+        print(municip)  # FIXME: REMOVE
+        for c in coord_temp:
+            print(f'working with {c}')
+            lon, lat = c.split(' ')
+            lon, lat = pyproj.transform(in_proj, out_proj, float(lon), float(lat))
+            municipality_points.append((lon, lat))
+        municipality_geo_data[municip] = municipality_points
+
     return municipality_geo_data
 
 def get_pole_points(file_path) -> list[tuple]:
@@ -180,8 +193,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             'Action': [],
             'Existing Height': [],
             'New Height': [],
-            'Quantity': [],
-            'Municipality': []
+            'Quantity': []
         }
         columns_info = {
             'Pole Ref #': [],
@@ -194,8 +206,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             'Attachment Height': [],
             'Billing Description (Verizon Use Only)': [],
             'Fs/Rs OR Quad': [],
-            'Comments': [],
-            'Municipality': []
+            'Comments': []
         }
         columns_details = {
             'Pole Ref #': [],
@@ -214,8 +225,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             'Not Owned or Controlled by VZ (Verizon Use Only)': [],
             'Customer Already Attached': [],
             'Pole OTMR Qualified Y/N (Verizon Use Only)': [],
-            'If No, Reason Why (Verizon Use Only)': [],
-            'Municipality': []
+            'If No, Reason Why (Verizon Use Only)': []
         }
         verizonmmrs = pandas.DataFrame(columns_mrs)
         verizoninfo = pandas.DataFrame(columns_info)
@@ -253,7 +263,10 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
 
         # Begin refactoring data
         for x, value in enumerate(mrn_iterable):
-            if not file.loc[x, 'SCID'].isdigit():  # Skip pole if SCID contains a letter because it is a reference pole
+            try:
+                if not file.loc[x, 'SCID'].isdigit():  # Skip pole if SCID contains a letter because it is a reference pole
+                    continue
+            except AttributeError:
                 continue
             if pandas.isna(value) or not isinstance(value, str):  # Check for NaN/float values
                 new_row_data = {
@@ -265,8 +278,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                     'Action': 'n/a',
                     'Existing Height': 'n/a',
                     'New Height': 'n/a',
-                    'Quantity': 'n/a',
-                    'Municipality': 'n/a'
+                    'Quantity': 'n/a'
                 }
                 # Add the new row to the DataFrame using .loc
                 verizonmmrs.loc[len(verizonmmrs)] = new_row_data
@@ -342,6 +354,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                     'Pole Ref #': new_row_data_mrs['Pole Ref #'],
                     'Telco Pole #': new_row_data_mrs['Telco Pole #'],
                     'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
+                    'Number of Attachments': 1,
                     'Attachment Description': attachment_type,
                     'Attachment Height': new_height
                 }
