@@ -6,40 +6,29 @@ import pypdf
 import datetime
 import geopandas
 import sys
-import pyproj
+from shapely.geometry import Point
 
-# FIXME :: POINTS ARE CREATED INCORRECTLY
-def load_municipality_data(shp_file: str = None) -> dict:
+
+def load_municipality_data(shp_file: str = None) -> geopandas.GeoDataFrame:
     if not shp_file:
         try: source = sys._MEIPASS
         except: source =  os.path.abspath(".")
         source_path = os.path.join(source, 'vetro_source.zip')
     else:
         source_path = shp_file
-    municipality_geo_data = {}
-    datafromfile = geopandas.read_file(source_path)
-    datafromfile = datafromfile[['MUNICIPA_1', 'geometry']]
-    name = datafromfile['MUNICIPA_1'].tolist()
-    geo = datafromfile['geometry'].tolist()
-    in_proj = pyproj.Proj(init='epsg:3857')
-    out_proj = pyproj.Proj(init='epsg:4326')
+    municipality_data = geopandas.read_file(source_path)
 
-    for i in range(len(name)):
-        if name[i] == 'None':
-            continue
-        municip = name[i]
-        coord_temp = str(geo[i])
-        coord_temp = coord_temp[coord_temp.rfind('(')+1:coord_temp.find(')', coord_temp.rfind('('))].split(', ')
-        municipality_points = []
-        print(municip)  # FIXME: REMOVE
-        for c in coord_temp:
-            print(f'working with {c}')
-            lon, lat = c.split(' ')
-            lon, lat = pyproj.transform(in_proj, out_proj, float(lon), float(lat))
-            municipality_points.append((lon, lat))
-        municipality_geo_data[municip] = municipality_points
+    return municipality_data
 
-    return municipality_geo_data
+def get_municipality(lat: float, lon: float, mun_data: geopandas.GeoDataFrame) -> str:
+    point_wgs84 = geopandas.GeoSeries([Point(lon, lat)], crs="EPSG:4326")
+    point_transformed = point_wgs84.to_crs(mun_data.crs)
+    matches = mun_data[mun_data.geometry.contains(point_transformed.iloc[0])]
+
+    if not matches.empty:
+        return matches.iloc[0]['MUNICIPA_1']
+    else:
+        return None
 
 def get_pole_points(file_path) -> list[tuple]:
     output = []
@@ -173,10 +162,6 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
     def get_street_name(address: str) -> str:
         return address.split(', ')[0].split(' ', maxsplit=1)[1]
 
-    def get_municipality(latlon: str) -> str:
-        # FIXME: Function should look at vetro data and determine what municipality a pole is in
-        pass
-
     try:
         file = file.loc[file['Owner'] == 'Verizon', ['Latitude', 'Longitude', 'SCID', 'Owner', 'Tag', 'verizon pennsylvania inc._tag',
                                                      'Make Ready Notes', 'address']]
@@ -193,7 +178,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             'Action': [],
             'Existing Height': [],
             'New Height': [],
-            'Quantity': []
+            'Quantity': [],
+            'Municipality': []
         }
         columns_info = {
             'Pole Ref #': [],
@@ -206,7 +192,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             'Attachment Height': [],
             'Billing Description (Verizon Use Only)': [],
             'Fs/Rs OR Quad': [],
-            'Comments': []
+            'Comments': [],
+            'Municipality': []
         }
         columns_details = {
             'Pole Ref #': [],
@@ -225,7 +212,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             'Not Owned or Controlled by VZ (Verizon Use Only)': [],
             'Customer Already Attached': [],
             'Pole OTMR Qualified Y/N (Verizon Use Only)': [],
-            'If No, Reason Why (Verizon Use Only)': []
+            'If No, Reason Why (Verizon Use Only)': [],
+            'Municipality': []
         }
         verizonmmrs = pandas.DataFrame(columns_mrs)
         verizoninfo = pandas.DataFrame(columns_info)
@@ -260,6 +248,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
         action = None
         existing_height = None
         new_height = None
+
+        mun_data = load_municipality_data('Pennsylvania_Municipality_Boundary.zip')
 
         # Begin refactoring data
         for x, value in enumerate(mrn_iterable):
@@ -337,6 +327,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                 # Format action
                 action = actions[str(action)]
 
+                municipality = get_municipality(file.loc[x, 'Latitude'], file.loc[x, 'Longitude'], mun_data)
+
                 new_row_data_mrs = {
                     'Pole Ref #': file.loc[x, 'SCID'],
                     'Telco Pole #': file.loc[x, 'verizon pennsylvania inc._tag'],
@@ -346,7 +338,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                     'Action': action,
                     'Existing Height': existing_height,
                     'New Height': new_height,
-                    'Quantity': '1'
+                    'Quantity': '1',
+                    'Municipality': municipality
                 }
                 verizonmmrs.loc[len(verizonmmrs)] = new_row_data_mrs
 
@@ -356,7 +349,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                     'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
                     'Number of Attachments': 1,
                     'Attachment Description': attachment_type,
-                    'Attachment Height': new_height
+                    'Attachment Height': new_height,
+                    'Municipality': municipality
                 }
                 if attacher_company == 'LOOP INTERNET HOLDCO LLC':
                     verizoninfo.loc[len(verizoninfo)] = new_row_data_info
@@ -368,6 +362,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                     'Street Name': get_street_name(file.loc[x, 'address']),
                     'Latitude': file.loc[x, 'Latitude'],
                     'Longitude': file.loc[x, 'Longitude'],
+                    'Municipality': municipality
                 }
                 if not verizondetails['Pole Ref #'].isin(
                         [file.loc[x, 'SCID']]).any() and attacher_company == 'LOOP INTERNET HOLDCO LLC':
@@ -376,9 +371,9 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             verizoninfo['Attachment Description'] = verizoninfo['Attachment Description'].replace('Down Guy', 'Anchor')
 
         with pandas.ExcelWriter(f'{path}/{name}-verizon-MRS.xlsx', engine='openpyxl') as writer:
-            verizonmmrs.to_excel(writer, sheet_name='Make Ready', index=False)
-            verizoninfo.to_excel(writer, sheet_name='Attachment Info', index=False)
             verizondetails.to_excel(writer, sheet_name='Pole Details', index=False)
+            verizoninfo.to_excel(writer, sheet_name='Attachment Info', index=False)
+            verizonmmrs.to_excel(writer, sheet_name='Make Ready', index=False)
         return True
 
     except Exception as e:
