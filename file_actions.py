@@ -57,6 +57,7 @@ def read_and_normalize(file_path) -> pandas.DataFrame:
     replacements = {
         'PPL Company': 'PPL',
         'Verizon Pennsylvania Inc.': 'Verizon',
+        'Verizon Pennsylvania, Inc.': 'Verizon',
         'Frontier Communications of PA. - New Holland': 'Frontier',
         'Frontier Communications of PA. - New Holland Telecom': 'Frontier',
         'Frontier Communications - Lakewood': 'Frontier',
@@ -164,7 +165,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
 
     try:
         file = file.loc[file['Owner'] == 'Verizon', ['Latitude', 'Longitude', 'SCID', 'Owner', 'Tag', 'verizon pennsylvania inc._tag',
-                                                     'Make Ready Notes', 'address']]
+                                                     'Make Ready Notes', 'address', 'Pole Type']]
 
         # Create a new dataframe
         columns_mrs = {
@@ -226,6 +227,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             'Verizon Pennsylvania Inc.': 'VERIZON WIRELESS(AERIAL)',
             'CTSI, LLC, Dba Frontier Communications': 'FRONTIER COMMUNICATIONS',
             'Loop Telecom Pennsylvania LLC': 'LOOP INTERNET HOLDCO LLC',
+            'Loop Internet': 'LOOP INTERNET HOLDCO LLC',
             'Comcast': 'COMCAST',
             'Service Electric Company': 'SERVICE ELECTRIC CABLE TV'
         }
@@ -253,10 +255,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
 
         # Begin refactoring data
         for x, value in enumerate(mrn_iterable):
-            try:
-                if not file.loc[x, 'SCID'].isdigit():  # Skip pole if SCID contains a letter because it is a reference pole
-                    continue
-            except AttributeError:
+            if not file.loc[x, 'Pole Type'] == 'pole':  # Skip pole if SCID contains a letter because it is a reference pole
                 continue
             if pandas.isna(value) or not isinstance(value, str):  # Check for NaN/float values
                 new_row_data = {
@@ -370,10 +369,28 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
 
             verizoninfo['Attachment Description'] = verizoninfo['Attachment Description'].replace('Down Guy', 'Anchor')
 
-        with pandas.ExcelWriter(f'{path}/{name}-verizon-MRS.xlsx', engine='openpyxl') as writer:
-            verizondetails.to_excel(writer, sheet_name='Pole Details', index=False)
-            verizoninfo.to_excel(writer, sheet_name='Attachment Info', index=False)
-            verizonmmrs.to_excel(writer, sheet_name='Make Ready', index=False)
+        municipalities = list(set(verizoninfo['Municipality'].tolist()))
+
+        # Check for municipalities
+        for municip in municipalities:
+            mmrs_filtered = verizonmmrs[verizonmmrs['Municipality'] == municip]
+            ids_for_municipality = mmrs_filtered['Pole Ref #'].unique()
+            info_filtered = verizoninfo[verizoninfo['Pole Ref #'].isin(ids_for_municipality)]
+            details_filtered = verizondetails[verizondetails['Pole Ref #'].isin(ids_for_municipality)]
+
+            # 4. Define the output filename using the municipality's name
+            output_filename = f'{path}/{name}-{municip}-verizon-MRS.xlsx'
+
+            # 5. Write the filtered DataFrames to a new Excel file
+            with pandas.ExcelWriter(output_filename, engine='openpyxl') as writer:
+                # Before writing, drop the 'Municipality' column as requested
+                mmrs_output = mmrs_filtered.drop(columns=['Municipality'])
+                info_output = info_filtered.drop(columns=['Municipality'])
+                details_output = details_filtered.drop(columns=['Municipality'])
+
+                details_output.to_excel(writer, sheet_name='Pole Details', index=False)
+                info_output.to_excel(writer, sheet_name='Attachment Info', index=False)
+                mmrs_output.to_excel(writer, sheet_name='Make Ready', index=False)
         return True
 
     except Exception as e:

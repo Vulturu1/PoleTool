@@ -120,23 +120,6 @@ class PoleMap(flet_map.Map):
             if self.page:
                 self.page.update()
 
-    # FIXME :: POINTS ARE CREATED INCORRECTLY
-    def create_municipality_points(self):
-        for municipality in self.municipality_geo_data:
-            polygon = flet_map.PolygonMarker(
-                coordinates=[
-                    flet_map.MapLatitudeLongitude(pair[0], pair[1]) for pair in self.municipality_geo_data[municipality]
-                ],
-                border_stroke_width=2,
-                border_color=ft.Colors.WHITE10,
-                color=ft.Colors.with_opacity(0.3, ft.Colors.WHITE10),
-                label=municipality
-            )
-            if self.markers_ref.current:
-                self.polygons_ref.current.polygons.append(polygon)
-                if self.page:
-                    self.page.update()
-
 
 class FileIO(ft.Column):
     def __init__(self, **kwargs):
@@ -265,7 +248,7 @@ class Footer(ft.Container):
     def __init__(self):
         super().__init__()
         self.status = ft.Text(value="Ready", color=ft.Colors.WHITE)
-        self.version = ft.Text(value='PoleTool V2.1', color=ft.Colors.GREY_700)
+        self.version = ft.Text(value='PoleTool V2.3', color=ft.Colors.GREY_700)
         self.padding = 5
         self.bgcolor = '#141414'
         holder = ft.Row(controls=[self.version, self.status], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
@@ -281,7 +264,7 @@ def main(page):
     page.window.width = 1015
     page.window.height = 700
     page.window.resizable = False
-    page.title = "PoleTool v2.1 - by Greg Mocanu"
+    page.title = "PoleTool v2.3 - by Greg Mocanu"
     page.bgcolor = '#242424'
     page.padding = 0
     page.spacing = 0
