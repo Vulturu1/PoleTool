@@ -26,7 +26,10 @@ def get_municipality(lat: float, lon: float, mun_data: geopandas.GeoDataFrame) -
     matches = mun_data[mun_data.geometry.contains(point_transformed.iloc[0])]
 
     if not matches.empty:
-        return matches.iloc[0]['MUNICIPA_1']
+        match = matches.iloc[0]
+        municipality = match['MUNICIPA_1']
+        county = match['COUNTY_NAM']
+        return municipality, county
     else:
         return None
 
@@ -163,240 +166,270 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
     def get_street_name(address: str) -> str:
         return address.split(', ')[0].split(' ', maxsplit=1)[1]
 
-    try:
-        file = file.loc[file['Owner'] == 'Verizon', ['Latitude', 'Longitude', 'SCID', 'Owner', 'Tag', 'verizon pennsylvania inc._tag',
-                                                     'Make Ready Notes', 'address', 'Pole Type']]
+    file = file.loc[file['Owner'] == 'Verizon', ['Latitude', 'Longitude', 'SCID', 'Owner', 'Tag', 'verizon pennsylvania inc._tag',
+                                                 'Make Ready Notes', 'address', 'Pole Type']]
 
-        # Create a new dataframe
-        columns_mrs = {
-            'Pole Ref #': [],
-            'Telco Pole #': [],
-            'ELCO Pole #': [],
-            'Route/Line (Verizon Use Only)': [],
-            'Street Name': [],
-            'Attacher Company': [],
-            'Attachment Type': [],
-            'Action': [],
-            'Existing Height': [],
-            'New Height': [],
-            'Quantity': [],
-            'Municipality': []
-        }
-        columns_info = {
-            'Pole Ref #': [],
-            'Telco Pole #': [],
-            'ELCO Pole #': [],
-            'Route/Line (Verizon Use Only)': [],
-            'Street Name': [],
-            'Attachment Description': [],
-            'Number of Attachments': [],
-            'Attachment Height': [],
-            'Billing Description (Verizon Use Only)': [],
-            'Fs/Rs OR Quad': [],
-            'Comments': [],
-            'Municipality': []
-        }
-        columns_details = {
-            'Pole Ref #': [],
-            'MR Req': [],
-            'Telco Pole #': [],
-            'ELCO Pole #': [],
-            'Route/Line (Verizon Use Only)': [],
-            'Street Name': [],
-            'Cross Street Name': [],
-            'Location Description': [],
-            'Latitude': [],
-            'Longitude': [],
-            'Height': [],
-            'Class': [],
-            'Exclude from Application (Verizon Use Only)': [],
-            'Not Owned or Controlled by VZ (Verizon Use Only)': [],
-            'Customer Already Attached': [],
-            'Pole OTMR Qualified Y/N (Verizon Use Only)': [],
-            'If No, Reason Why (Verizon Use Only)': [],
-            'Municipality': []
-        }
-        verizonmmrs = pandas.DataFrame(columns_mrs)
-        verizoninfo = pandas.DataFrame(columns_info)
-        verizondetails = pandas.DataFrame(columns_details)
+    logging_municipalities: list[str] = []
+    logging_counties: list[str] = []
 
-        # Declare variables for information refactorization
-        hardware = ['Guy', 'Com', 'Strand']
-        action_check = ['Attach', 'Raise', 'Lower']
-        companies = {
-            'Verizon Pennsylvania Inc.': 'VERIZON WIRELESS(AERIAL)',
-            'CTSI, LLC, Dba Frontier Communications': 'FRONTIER COMMUNICATIONS',
-            'Loop Telecom Pennsylvania LLC': 'LOOP INTERNET HOLDCO LLC',
-            'Loop Internet': 'LOOP INTERNET HOLDCO LLC',
-            'Comcast': 'COMCAST',
-            'Service Electric Company': 'SERVICE ELECTRIC CABLE TV'
-        }
-        actions = {
-            'Raise': 'Raise',
-            'Lower': 'Lower',
-            'Attach': 'No Make Ready'
-        }
-        attachments = {
-            'Com': 'Cable/Strand',
-            'Guy': 'Down Guy',
-            'Strand': 'Cable/Strand',
-        }
-        file.reset_index(drop=True, inplace=True)
-        mrn_iterable = file['Make Ready Notes'].tolist()
+    # Create a new dataframe
+    columns_mrs = {
+        'Pole Ref #': [],
+        'Telco Pole #': [],
+        'ELCO Pole #': [],
+        'Route/Line (Verizon Use Only)': [],
+        'Street Name': [],
+        'Attacher Company': [],
+        'Attachment Type': [],
+        'Action': [],
+        'Existing Height': [],
+        'New Height': [],
+        'Quantity': [],
+        'Municipality': []
+    }
+    columns_info = {
+        'Pole Ref #': [],
+        'Telco Pole #': [],
+        'ELCO Pole #': [],
+        'Route/Line (Verizon Use Only)': [],
+        'Street Name': [],
+        'Attachment Description': [],
+        'Number of Attachments': [],
+        'Attachment Height': [],
+        'Billing Description (Verizon Use Only)': [],
+        'Fs/Rs OR Quad': [],
+        'Comments': [],
+        'Municipality': []
+    }
+    columns_details = {
+        'Pole Ref #': [],
+        'MR Req': [],
+        'Telco Pole #': [],
+        'ELCO Pole #': [],
+        'Route/Line (Verizon Use Only)': [],
+        'Street Name': [],
+        'Cross Street Name': [],
+        'Location Description': [],
+        'Latitude': [],
+        'Longitude': [],
+        'Height': [],
+        'Class': [],
+        'Exclude from Application (Verizon Use Only)': [],
+        'Not Owned or Controlled by VZ (Verizon Use Only)': [],
+        'Customer Already Attached': [],
+        'Pole OTMR Qualified Y/N (Verizon Use Only)': [],
+        'If No, Reason Why (Verizon Use Only)': [],
+        'Municipality': []
+    }
+    verizonmmrs = pandas.DataFrame(columns_mrs)
+    verizoninfo = pandas.DataFrame(columns_info)
+    verizondetails = pandas.DataFrame(columns_details)
 
-        # Declare variables for table input
-        attacher_company = None
-        attachment_type = None
-        action = None
-        existing_height = None
-        new_height = None
+    # Declare variables for information refactorization
+    hardware = ['Guy', 'Com', 'Strand']
+    action_check = ['Attach', 'Raise', 'Lower']
+    companies = {
+        'Verizon Pennsylvania Inc.': 'VERIZON WIRELESS(AERIAL)',
+        'CTSI, LLC, Dba Frontier Communications': 'FRONTIER COMMUNICATIONS',
+        'Loop Telecom Pennsylvania LLC': 'LOOP INTERNET HOLDCO LLC',
+        'Loop Internet': 'LOOP INTERNET HOLDCO LLC',
+        'Comcast': 'COMCAST',
+        'Service Electric Company': 'SERVICE ELECTRIC CABLE TV'
+    }
+    actions = {
+        'Raise': 'Raise',
+        'Lower': 'Lower',
+        'Attach': 'No Make Ready',
+        'Place': 'No Make Ready'  # This is an edge case scenario
+    }
+    attachments = {
+        'Com': 'Cable/Strand',
+        'Guy': 'Down Guy',
+        'Strand': 'Cable/Strand',
+    }
+    file.reset_index(drop=True, inplace=True)
+    mrn_iterable = file['Make Ready Notes'].tolist()
 
-        mun_data = load_municipality_data('Pennsylvania_Municipality_Boundary.zip')
+    # Declare variables for table input
+    attacher_company = None
+    attachment_type = None
+    action = None
+    existing_height = None
+    new_height = None
 
-        # Begin refactoring data
-        for x, value in enumerate(mrn_iterable):
-            if not file.loc[x, 'Pole Type'] == 'pole':  # Skip pole if SCID contains a letter because it is a reference pole
+    # Begin refactoring data
+    for x, value in enumerate(mrn_iterable):
+        if not file.loc[x, 'Pole Type'] == 'pole':  # Skip pole if SCID contains a letter because it is a reference pole
+            continue
+        if '.' in file.loc[x, 'SCID']:
+            continue
+        if pandas.isna(value) or not isinstance(value, str):  # Check for NaN/float values
+            new_row_data = {
+                'Pole Ref #': file.loc[x, 'SCID'],
+                'Telco Pole #': file.loc[x, 'verizon pennsylvania inc._tag'],
+                'ELCO Pole #': file.loc[x, 'Tag'],
+                'Attacher Company': 'Not Surveyed',
+                'Attachment Type': 'n/a',
+                'Action': 'n/a',
+                'Existing Height': 'n/a',
+                'New Height': 'n/a',
+                'Quantity': 'n/a'
+            }
+            # Add the new row to the DataFrame using .loc
+            verizonmmrs.loc[len(verizonmmrs)] = new_row_data
+            continue  # Move to the next instruction
+        lines = re.split('\n+', value)
+        for line in lines:
+            company_found = False
+            for comp in companies:
+                comp_match_obj = re.match(comp, line, re.IGNORECASE)
+                if comp_match_obj:
+                    attacher_company = companies[comp_match_obj.group()]
+                    line = line[comp_match_obj.end():]
+                    company_found = True
+                    break  # Exit the loop once a company is found
+            if not company_found:
+                continue  # Skip to the next line if no company was matched
+            if not any(re.search(item, line, re.IGNORECASE) for item in hardware):
                 continue
-            if pandas.isna(value) or not isinstance(value, str):  # Check for NaN/float values
-                new_row_data = {
-                    'Pole Ref #': file.loc[x, 'SCID'],
-                    'Telco Pole #': file.loc[x, 'verizon pennsylvania inc._tag'],
-                    'ELCO Pole #': file.loc[x, 'Tag'],
-                    'Attacher Company': 'Not Surveyed',
-                    'Attachment Type': 'n/a',
-                    'Action': 'n/a',
-                    'Existing Height': 'n/a',
-                    'New Height': 'n/a',
-                    'Quantity': 'n/a'
-                }
-                # Add the new row to the DataFrame using .loc
-                verizonmmrs.loc[len(verizonmmrs)] = new_row_data
-                continue  # Move to the next instruction
-            lines = re.split('\n+', value)
-            for line in lines:
-                company_found = False
-                for comp in companies:
-                    comp_match_obj = re.match(comp, line, re.IGNORECASE)
-                    if comp_match_obj:
-                        attacher_company = companies[comp_match_obj.group()]
-                        line = line[comp_match_obj.end():]
-                        company_found = True
-                        break  # Exit the loop once a company is found
-                if not company_found:
-                    continue  # Skip to the next line if no company was matched
-                if not any(re.search(item, line, re.IGNORECASE) for item in hardware):
-                    continue
-                if not any(re.search(act, line, re.IGNORECASE) for act in action_check):
-                    continue
-                punctuation_marks = r'[:"\'.;]'
-                line = re.sub(punctuation_marks, '', line)
-                iterable_line = line.split(' ')
-                for i, word in enumerate(iterable_line):
-                    if word == 'at':
-                        attachment_type = iterable_line[i - 1]
-                        existing_height = iterable_line[i + 1]
-                        action = iterable_line[i + 2]
-                        # Perform calculations if needed for a new height
-                        if action == 'Raise':
-                            change = iterable_line[i + 3]
-                            new_height = split_and_convert(existing_height) + int(change)
-                            new_height = new_height / 12
-                            fraction, whole = math.modf(new_height)
-                            first, second = existing_height.split('-')
-                            existing_height = f'''{first}'-{second}"'''
-                            new_height = f'''{int(whole)}'-{int(fraction * 12)}"'''
-                            break
-                        elif action == 'Lower':
-                            change = iterable_line[i + 3]
-                            new_height = split_and_convert(existing_height) - int(change)
-                            new_height = new_height / 12
-                            fraction, whole = math.modf(new_height)
-                            first, second = existing_height.split('-')
-                            existing_height = f'''{first}'-{second}"'''
-                            new_height = f'''{int(whole)}'-{int(fraction * 12)}"'''
-                            break
-                        else:
-                            first, second = existing_height.split('-', maxsplit=1)
-                            existing_height = f'''{first}'-{second}"'''
-                            new_height = existing_height
-                            break
+            if not any(re.search(act, line, re.IGNORECASE) for act in action_check):
+                continue
+            punctuation_marks = r'[:"\'.;]'
+            line = re.sub(punctuation_marks, '', line)
+            iterable_line = line.split(' ')
+            for i, word in enumerate(iterable_line):
+                if word == 'at':
+                    attachment_type = iterable_line[i - 1]
+                    existing_height = iterable_line[i + 1]
+                    action = iterable_line[i + 2]
+                    # Perform calculations if needed for a new height
+                    if action == 'Raise':
+                        change = iterable_line[i + 3]
+                        new_height = split_and_convert(existing_height) + int(change)
+                        new_height = new_height / 12
+                        fraction, whole = math.modf(new_height)
+                        first, second = existing_height.split('-')
+                        existing_height = f'''{first}'-{second}"'''
+                        new_height = f'''{int(whole)}'-{int(fraction * 12)}"'''
+                        break
+                    elif action == 'Lower':
+                        change = iterable_line[i + 3]
+                        new_height = split_and_convert(existing_height) - int(change)
+                        new_height = new_height / 12
+                        fraction, whole = math.modf(new_height)
+                        first, second = existing_height.split('-')
+                        existing_height = f'''{first}'-{second}"'''
+                        new_height = f'''{int(whole)}'-{int(fraction * 12)}"'''
+                        break
+                    else:
+                        first, second = existing_height.split('-', maxsplit=1)
+                        existing_height = f'''{first}'-{second}"'''
+                        new_height = existing_height
+                        break
 
-                # Format attachment type
-                attachment_type = attachments[attachment_type]
-                # Format action
-                action = actions[str(action)]
+            # Format attachment type
+            attachment_type = attachments[attachment_type]
+            # Format action
+            action = actions[str(action)]
 
-                municipality = get_municipality(file.loc[x, 'Latitude'], file.loc[x, 'Longitude'], mun_data)
+            mun_data = load_municipality_data('Pennsylvania_Municipality_Boundary.zip')
+            municipality, county = get_municipality(file.loc[x, 'Latitude'], file.loc[x, 'Longitude'], mun_data)
+            if municipality not in logging_municipalities or county not in logging_counties:
+                logging_municipalities.append(municipality)
+                logging_counties.append(county)
 
-                new_row_data_mrs = {
-                    'Pole Ref #': file.loc[x, 'SCID'],
-                    'Telco Pole #': file.loc[x, 'verizon pennsylvania inc._tag'],
-                    'ELCO Pole #': file.loc[x, 'Tag'],
-                    'Attacher Company': attacher_company,
-                    'Attachment Type': attachment_type,
-                    'Action': action,
-                    'Existing Height': existing_height,
-                    'New Height': new_height,
-                    'Quantity': '1',
-                    'Municipality': municipality
-                }
-                verizonmmrs.loc[len(verizonmmrs)] = new_row_data_mrs
+            new_row_data_mrs = {
+                'Pole Ref #': file.loc[x, 'SCID'],
+                'Telco Pole #': file.loc[x, 'verizon pennsylvania inc._tag'],
+                'ELCO Pole #': file.loc[x, 'Tag'],
+                'Attacher Company': attacher_company,
+                'Attachment Type': attachment_type,
+                'Action': action,
+                'Existing Height': existing_height,
+                'New Height': new_height,
+                'Quantity': '1',
+                'Municipality': municipality
+            }
+            verizonmmrs.loc[len(verizonmmrs)] = new_row_data_mrs
 
-                new_row_data_info = {
-                    'Pole Ref #': new_row_data_mrs['Pole Ref #'],
-                    'Telco Pole #': new_row_data_mrs['Telco Pole #'],
-                    'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
-                    'Number of Attachments': 1,
-                    'Attachment Description': attachment_type,
-                    'Attachment Height': new_height,
-                    'Municipality': municipality
-                }
-                if attacher_company == 'LOOP INTERNET HOLDCO LLC':
-                    verizoninfo.loc[len(verizoninfo)] = new_row_data_info
+            new_row_data_info = {
+                'Pole Ref #': new_row_data_mrs['Pole Ref #'],
+                'Telco Pole #': new_row_data_mrs['Telco Pole #'],
+                'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
+                'Number of Attachments': 1,
+                'Attachment Description': attachment_type,
+                'Attachment Height': new_height,
+                'Municipality': municipality
+            }
+            if attacher_company == 'LOOP INTERNET HOLDCO LLC':
+                verizoninfo.loc[len(verizoninfo)] = new_row_data_info
 
-                new_row_data_details = {
-                    'Pole Ref #': new_row_data_mrs['Pole Ref #'],
-                    'Telco Pole #': new_row_data_mrs['Telco Pole #'],
-                    'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
-                    'Street Name': get_street_name(file.loc[x, 'address']),
-                    'Latitude': file.loc[x, 'Latitude'],
-                    'Longitude': file.loc[x, 'Longitude'],
-                    'Municipality': municipality
-                }
-                if not verizondetails['Pole Ref #'].isin(
-                        [file.loc[x, 'SCID']]).any() and attacher_company == 'LOOP INTERNET HOLDCO LLC':
-                    verizondetails.loc[len(verizondetails)] = new_row_data_details
+            new_row_data_details = {
+                'Pole Ref #': new_row_data_mrs['Pole Ref #'],
+                'Telco Pole #': new_row_data_mrs['Telco Pole #'],
+                'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
+                'Street Name': get_street_name(file.loc[x, 'address']),
+                'Latitude': file.loc[x, 'Latitude'],
+                'Longitude': file.loc[x, 'Longitude'],
+                'Municipality': municipality
+            }
+            if not verizondetails['Pole Ref #'].isin(
+                    [file.loc[x, 'SCID']]).any() and attacher_company == 'LOOP INTERNET HOLDCO LLC':
+                verizondetails.loc[len(verizondetails)] = new_row_data_details
 
-            verizoninfo['Attachment Description'] = verizoninfo['Attachment Description'].replace('Down Guy', 'Anchor')
+        verizoninfo['Attachment Description'] = verizoninfo['Attachment Description'].replace('Down Guy', 'Anchor')
 
-        municipalities = list(set(verizoninfo['Municipality'].tolist()))
+    municipalities = list(set(verizoninfo['Municipality'].tolist()))
+    logging_total_poles = len(verizondetails['Pole Ref #'].tolist())
 
-        # Check for municipalities
-        for municip in municipalities:
-            mmrs_filtered = verizonmmrs[verizonmmrs['Municipality'] == municip]
-            ids_for_municipality = mmrs_filtered['Pole Ref #'].unique()
-            info_filtered = verizoninfo[verizoninfo['Pole Ref #'].isin(ids_for_municipality)]
-            details_filtered = verizondetails[verizondetails['Pole Ref #'].isin(ids_for_municipality)]
+    poles = verizonmmrs['Pole Ref #'].tolist()
+    make_ready = verizonmmrs['Action'].tolist()
 
-            # 4. Define the output filename using the municipality's name
-            output_filename = f'{path}/{name}-{municip}-verizon-MRS.xlsx'
+    def count_ids_with_action_set(ids, actions, target):
 
-            # 5. Write the filtered DataFrames to a new Excel file
-            with pandas.ExcelWriter(output_filename, engine='openpyxl') as writer:
-                # Before writing, drop the 'Municipality' column as requested
-                mmrs_output = mmrs_filtered.drop(columns=['Municipality'])
-                info_output = info_filtered.drop(columns=['Municipality'])
-                details_output = details_filtered.drop(columns=['Municipality'])
+        unique_ids_with_target = set()
 
-                details_output.to_excel(writer, sheet_name='Pole Details', index=False)
-                info_output.to_excel(writer, sheet_name='Attachment Info', index=False)
-                mmrs_output.to_excel(writer, sheet_name='Make Ready', index=False)
-        return True
+        for i in range(len(ids)):
+            if actions[i] != target:
+                unique_ids_with_target.add(ids[i])
 
-    except Exception as e:
-        with open(f'{path}/error.log', 'a+') as f:
-            f.write(str(e))
-        return False
+        return len(unique_ids_with_target)
+
+    logging_make_ready_count = count_ids_with_action_set(poles, make_ready, 'No Make Ready')
+
+    # Check for municipalities
+    for municip in municipalities:
+        mmrs_filtered = verizonmmrs[verizonmmrs['Municipality'] == municip]
+        ids_for_municipality = mmrs_filtered['Pole Ref #'].unique()
+        info_filtered = verizoninfo[verizoninfo['Pole Ref #'].isin(ids_for_municipality)]
+        details_filtered = verizondetails[verizondetails['Pole Ref #'].isin(ids_for_municipality)]
+
+        # 4. Define the output filename using the municipality's name
+        output_filename = f'{path}/{name}-{municip}-verizon-MRS.xlsx'
+
+        # 5. Write the filtered DataFrames to a new Excel file
+        with pandas.ExcelWriter(output_filename, engine='openpyxl') as writer:
+            # Before writing, drop the 'Municipality' column as requested
+            mmrs_output = mmrs_filtered.drop(columns=['Municipality'])
+            info_output = info_filtered.drop(columns=['Municipality'])
+            details_output = details_filtered.drop(columns=['Municipality'])
+
+            details_output.to_excel(writer, sheet_name='Pole Details', index=False)
+            info_output.to_excel(writer, sheet_name='Attachment Info', index=False)
+            mmrs_output.to_excel(writer, sheet_name='Make Ready', index=False)
+
+    # Output sheet data aggregation
+    with open(f'{path}/{name}-header_data.txt', 'w') as output:
+        output.write(f'''
+        Municipalities:  {logging_municipalities}
+        Counties:        {logging_counties}
+        
+        Number of Poles: {logging_total_poles}
+        Need Make Ready: {logging_make_ready_count}
+        ''')
+
+    return True
+
 
 def frontier_pdf(file: pandas.DataFrame, path, name) -> bool:
 

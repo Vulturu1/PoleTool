@@ -39,6 +39,7 @@ class FileActions(ft.Column):
         mrn = FileAction(name='Generate Make Ready Notes', description='Generates Make Ready Notes which are typically submitted with strand maps.')
         verizon = FileAction(name='Generate Verizon Application', description='Generates Verizon applications by municipality to be submitted for pole applications')
         frontier = FileAction(name='Generate Frontier Application', description='Generates Frontier applications to be submitted for pole applications')
+        frontier.disabled = True  # FIXME: Temporary
         self.controls = [vetro, mrn, verizon, frontier]
         self.padding = 10
         self.scroll = ft.ScrollMode.ADAPTIVE
