@@ -7,17 +7,22 @@ import datetime
 import geopandas
 import sys
 from shapely.geometry import Point
+import collections
 
 
 def load_municipality_data(shp_file: str = None) -> geopandas.GeoDataFrame:
     if not shp_file:
-        try: source = sys._MEIPASS
-        except: source =  os.path.abspath(".")
-        source_path = os.path.join(source, 'vetro_source.zip')
+        try:
+            source = sys._MEIPASS
+        except AttributeError:
+            source = os.path.abspath(".")
+
+        # Use the correct filename
+        source_path = os.path.join(source, 'Pennsylvania_Municipality_Boundary.zip')
     else:
         source_path = shp_file
-    municipality_data = geopandas.read_file(source_path)
 
+    municipality_data = geopandas.read_file(source_path)
     return municipality_data
 
 def get_municipality(lat: float, lon: float, mun_data: geopandas.GeoDataFrame) -> str:
@@ -53,7 +58,7 @@ def read_and_normalize(file_path) -> pandas.DataFrame:
     headers_list = file.columns.tolist()
     found_headers_to_check = ['latitude', 'longitude', 'scid', 'node_type', 'ppl company_tag', 'pole_owner',
                               'verizon pennsylvania inc._tag', 'pole_tag', 'unknown_tag', 'make_ready_notes', 'address',
-                              'commonwealth telephone co.  dba frontier comm._tag', 'county']
+                              'commonwealth telephone co.  dba frontier comm._tag', 'county', 'street_name', 'street_number']
     found_headers = [header for header in found_headers_to_check if header in headers_list]
     file = file[found_headers]
 
@@ -163,11 +168,31 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
         except ValueError:
             raise ValueError
 
-    def get_street_name(address: str) -> str:
-        return address.split(', ')[0].split(' ', maxsplit=1)[1]
+    def get_street_name(data_file: pandas.DataFrame) -> str:
+        try:
+            address = data_file.loc[x, 'address']
+            return address.split(', ')[0].split(' ', maxsplit=1)[1]
+        except:
+            street = data_file.loc[x, 'street_name']
+            return street
 
-    file = file.loc[file['Owner'] == 'Verizon', ['Latitude', 'Longitude', 'SCID', 'Owner', 'Tag', 'verizon pennsylvania inc._tag',
-                                                 'Make Ready Notes', 'address', 'Pole Type']]
+    headers_list = file.columns.tolist()
+    found_headers_to_check = [
+        'Latitude',
+        'Longitude',
+        'SCID',
+        'Owner',
+        'Tag',
+        'verizon pennsylvania inc._tag',
+        'Make Ready Notes',
+        'address',
+        'Pole Type',
+        'street_name',
+        'street_number'
+    ]
+    found_headers = [header for header in found_headers_to_check if header in headers_list]
+    file = file.loc[file['Owner'] == 'Verizon', found_headers]
+
 
     logging_municipalities: list[str] = []
     logging_counties: list[str] = []
@@ -332,7 +357,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
             # Format action
             action = actions[str(action)]
 
-            mun_data = load_municipality_data('Pennsylvania_Municipality_Boundary.zip')
+            mun_data = load_municipality_data()
             municipality, county = get_municipality(file.loc[x, 'Latitude'], file.loc[x, 'Longitude'], mun_data)
             if municipality not in logging_municipalities or county not in logging_counties:
                 logging_municipalities.append(municipality)
@@ -368,7 +393,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
                 'Pole Ref #': new_row_data_mrs['Pole Ref #'],
                 'Telco Pole #': new_row_data_mrs['Telco Pole #'],
                 'ELCO Pole #': new_row_data_mrs['ELCO Pole #'],
-                'Street Name': get_street_name(file.loc[x, 'address']),
+                'Street Name': get_street_name(file),
                 'Latitude': file.loc[x, 'Latitude'],
                 'Longitude': file.loc[x, 'Longitude'],
                 'Municipality': municipality
@@ -396,6 +421,7 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
         return len(unique_ids_with_target)
 
     logging_make_ready_count = count_ids_with_action_set(poles, make_ready, 'No Make Ready')
+    logging_attachment_count = collections.Counter(verizoninfo['Attachment Description'].tolist())
 
     # Check for municipalities
     for municip in municipalities:
@@ -426,6 +452,8 @@ def verizon_app(file: pandas.DataFrame, path, name) -> bool:
         
         Number of Poles: {logging_total_poles}
         Need Make Ready: {logging_make_ready_count}
+        
+        Attachment Counts: {logging_attachment_count}
         ''')
 
     return True

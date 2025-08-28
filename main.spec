@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('C:\\Users\\GregMocanu\\Documents\\Loop Internet\\Custom Code\\all-in-one\\PoleRework\\Pennsylvania_Municipality_Boundary.zip', '.')],
+    datas=[('Pennsylvania_Municipality_Boundary.zip', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
